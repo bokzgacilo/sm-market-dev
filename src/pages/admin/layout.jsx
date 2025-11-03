@@ -1,14 +1,40 @@
 import {
   Card,
   Container,
+  Flex,
   Heading,
+  Icon,
   Image,
   Separator,
   SimpleGrid,
   Stack,
 } from '@chakra-ui/react';
-import { LuBox, LuClipboard, LuDollarSign, LuUsers } from 'react-icons/lu';
-import AdminNavLink from '@/components/custom/AdminNavLink';
+import Link from 'next/link';
+import { LuBox, LuChevronRight, LuClipboard, LuDollarSign, LuUsers } from 'react-icons/lu';
+
+const AdminNavLink = ({ href, icon, label, showChevron = true }) => {
+  return (
+    <Link href={href}>
+      <Flex
+        align="center"
+        direction="row"
+        gap={4}
+        color="#fff"
+        p={4}
+        borderRadius="md"
+        _hover={{ bg: "whiteAlpha.200" }}
+      >
+        <Icon>{icon}</Icon>
+        {label}
+        {showChevron && (
+          <Icon ml="auto">
+            <LuChevronRight />
+          </Icon>
+        )}
+      </Flex>
+    </Link>
+  );
+}
 
 export default function AdminLayout({ children }) {
   return (

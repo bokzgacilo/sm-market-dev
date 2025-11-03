@@ -1,0 +1,18 @@
+.slick-dots {
+  position: relative;
+  bottom: 0;
+}
+
+.slick-dots li {
+  width: auto !important;
+  height: auto !important;
+}
+
+.slick-dots {
+  text-align: center !important;
+}
+
+.slick-dots > li {
+  margin: 0 !important;
+  margin-right: 1rem !important;
+}

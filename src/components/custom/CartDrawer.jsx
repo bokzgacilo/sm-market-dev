@@ -1,10 +1,10 @@
 import { Button, CloseButton, Drawer, Icon, Portal, RadioCard, Separator, Stack, Text } from "@chakra-ui/react";
+import axios from "axios";
+import { useEffect, useState } from "react";
 import { LuShoppingCart } from "react-icons/lu";
+import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/helper/supabase";
 import CartItem from "./CartItem";
-import { useAuth } from "@/context/AuthContext";
-import { useEffect, useState } from "react";
-import axios from "axios";
 
 const shipping_methods = [
   {
@@ -99,7 +99,7 @@ export default function CartDrawer({ isMobile }) {
                 description: 'SM Market Mapua Payment',
                 payment_method_types: ['card', 'gcash', 'qrph', 'paymaya'],
                 line_items,
-                success_url: `http://localhost:3000/api/payment-success?ref=${ref}`,
+                success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/api/payment-success?ref=${ref}`,
                 failed_url: 'https://yourwebsite.com/failed',
               },
             },

@@ -3,10 +3,8 @@ import AdminLayout from "./layout";
 
 export default function Branches() {
   return (
-    <AdminLayout>
-      <Stack>
-        <Heading>Branches</Heading>
-      </Stack>
-    </AdminLayout>
+    <Stack>
+      <Heading>Branches</Heading>
+    </Stack>
   )
 }

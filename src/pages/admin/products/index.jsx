@@ -2,13 +2,12 @@ import { Button, ButtonGroup, Card, Field, Flex, Heading, HStack, IconButton, Im
 import { useEffect, useState } from "react";
 import { LuChevronLeft, LuChevronRight, LuPlus } from "react-icons/lu";
 import { supabase } from "@/helper/supabase";
-import AdminLayout from "../layout";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import ProductDetails from "./[slug]";
 
-export default function ProductIndex({ children }) {
+export default function ProductIndex() {
   const [products, setAllProducts] = useState([])
   const [isloadingProducts, isSetLoadingProducts] = useState(true)
   const [totalCount, setTotalCount] = useState(0);

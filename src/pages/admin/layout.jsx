@@ -24,7 +24,7 @@ export default function AdminLayout({ children }) {
     { href: '/admin/products', label: 'Products', icon: LuBox },
     { href: '/admin/orders', label: 'Orders', icon: LuClipboard },
     { href: '/admin/customers', label: 'Customers', icon: LuUsers },
-    { href: '/admin/sales', label: 'Sales', icon: LuDollarSign },
+    // { href: '/admin/sales', label: 'Sales', icon: LuDollarSign },
   ];
 
   return (

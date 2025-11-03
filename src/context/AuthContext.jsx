@@ -91,7 +91,7 @@ export const AuthProvider = ({ children }) => {
 
   const refreshCart = async () => {
     if (!user) return;
-    await fetchUserData(user.id);
+    await fetchUserData(user.email);
   };
 
   return (

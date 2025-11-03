@@ -117,8 +117,8 @@ export default function ProductPage() {
         <title>{pageTitle}</title>
       </Head>
 
-      <Stack p={{ base: 0, lg: 4 }} gap={{ base: 2, lg: 4 }}>
-        <Box px={2}>
+      <Stack p={{ base: 0, lg: 4 }} gap={{ base: 0, lg: 4 }}>
+        <Box p={{ base: 4, lg: 0 }} bg={{base: "gray.200", lg: "none"}}>
           <CustomBreadcrumb
             data={{
               root: 'home',
@@ -130,7 +130,7 @@ export default function ProductPage() {
 
         </Box>
 
-        <Card.Root>
+        <Card.Root rounded={{base: 0, lg: "md"}}>
           <Card.Body p={{ base: 0, lg: 4 }}>
             {isLoading ? (
               <Center>
@@ -144,18 +144,21 @@ export default function ProductPage() {
                 {product['3d_model'] ? (
                   <ProductViewer modelUrl={product['3d_model']} />
                 ) : (
-                  <Slider {...settings}>
-                    {product.images.map((img, index) => (
-                      <Image
-                        key={index.img}
-                        src={img}
-                        alt={`${product.title} image ${index + 1}`}
-                        width="100%"
-                        height="400px"
-                        objectFit="contain"
-                      />
-                    ))}
-                  </Slider>
+                  <Box py={4}>
+                    <Slider {...settings}>
+                      {product.images.map((img, index) => (
+                        <Image
+                          key={index.img}
+                          src={img}
+                          alt={`${product.title} image ${index + 1}`}
+                          width="100%"
+                          height="400px"
+                          objectFit="contain"
+                        />
+                      ))}
+                    </Slider>
+                  </Box>
+
                 )}
                 <Stack p={4}>
                   <Heading size='2xl'>{pageTitle}</Heading>

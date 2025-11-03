@@ -8,45 +8,26 @@ import {
   Spinner,
   Stack,
   Text,
+  Separator
 } from '@chakra-ui/react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import CustomBreadcrumb from '@/components/custom/CustomBreadcrumb';
-import { supabase } from '@/helper/supabase';
 import { useAuth } from '@/context/AuthContext';
 
 export default function Signin() {
   const router = useRouter();
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
-  const [checkingSession, setCheckingSession] = useState(true);
-  const { signIn } = useAuth();
+  const { signIn, user, userData} = useAuth();
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { user }, } = await supabase.auth.getUser();
-      if (user) {
-        router.replace('/profile');
-      } else {
-        setCheckingSession(false);
-      }
-    };
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-    checkAuth();
-  }, [router]);
-
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
-
-  if (checkingSession) {
-    return (
-      <Stack align='center' justify='center' h='80vh'>
-        <Spinner size='xl' color='blue.500' />
-        <Text mt={3}>Checking session...</Text>
-      </Stack>
-    );
+  if (userData) {
+    router.replace("/profile");
+    return;
   }
 
   return (
@@ -58,16 +39,12 @@ export default function Signin() {
         <link rel='icon' href='/favicon.ico' />
       </Head>
 
-      <Stack gap={4} p={4}>
-        <CustomBreadcrumb
-          data={{ root: 'home', first: 'signin' }}
-          display={{ base: 'none', md: 'block' }}
-        />
+      <Stack gap={4} p={4} alignItems="center">
         <Heading size='3xl' color='#0030FF'>
           Welcome Back!
         </Heading>
 
-        <SimpleGrid columns={{ base: 1, md: 1 }} gap={6}>
+        <SimpleGrid columns={{ base: 1, md: 1 }} justif gap={6} width={{base: "100%", lg: "30%"}}>
           <Card.Root>
             <Card.Body>
               <Stack gap={4}>
@@ -113,7 +90,8 @@ export default function Signin() {
                 >
                   Sign In
                 </Button>
-
+                <Separator />
+                <Button variant="outline">Google</Button>
                 <Text fontSize='sm' color='gray.600' textAlign='center'>
                   Don’t have an account?{' '}
                   <Link href='/signup' passHref>

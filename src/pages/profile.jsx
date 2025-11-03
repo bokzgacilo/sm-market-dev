@@ -6,32 +6,71 @@ import {
   Field,
   Heading,
   Input,
+  Menu,
+  Portal,
   Separator,
   SimpleGrid,
   Stack,
+  Table,
+  Tag,
   Text,
 } from '@chakra-ui/react';
+import axios from 'axios';
 import Head from 'next/head';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import CustomBreadcrumb from '@/components/custom/CustomBreadcrumb';
 import EditAddress from '@/components/custom/EditAddress';
 import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/helper/supabase';
 
 export default function Profile() {
-  const { signOut, user, userData } = useAuth();
+  const [orders, setOrders] = useState([]);
+  const { signOut, userData } = useAuth();
 
-  if (!user) {
+  useEffect(() => {
+    if (!userData) return;
+
+    const fetchAllOrders = async () => {
+      const { data } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('customer_id', userData.id);
+
+      setOrders(data);
+    };
+
+    fetchAllOrders();
+  }, [userData]);
+
+  if (!userData) {
     return (
-      <Stack align='center' justify='center' h={{base: "100dvh", lg: "60dvh"}} p={4}>
-        <Text fontSize='lg'>You’re not signed in.</Text>
+      <Stack alignItems='center' height='60dvh' p={4}>
+        <Text textAlign='center' fontSize='lg'>
+          You’re not signed in.
+        </Text>
         <Link href='/signin' passHref>
-          <Button colorPalette='blue' rounded="full">Sign In</Button>
+          <Button size='xl' colorPalette='blue' rounded='full'>
+            Sign In
+          </Button>
         </Link>
       </Stack>
     );
   }
 
-  if (!userData) return null;
+  const handleCompletePayment = async (cid) => {
+    const secretKey = 'sk_test_Y5BxqyZzNUjNgMLebHFh1Jhy';
+    const response = await axios.get(
+      `https://api.paymongo.com/v1/checkout_sessions/${cid}`,
+      {
+        headers: {
+          accept: 'application/json',
+          Authorization: `Basic ${Buffer.from(secretKey).toString('base64')}`,
+        },
+      },
+    );
+    window.location.href = response.data.data.attributes.checkout_url;
+  };
 
   return (
     <>
@@ -51,15 +90,13 @@ export default function Profile() {
         <SimpleGrid columns={{ base: 1, lg: 2 }} gap={6}>
           <Card.Root>
             <Card.Header p={4}>
-              <Card.Title>
-                Customer Profile
-              </Card.Title>
+              <Card.Title>Customer Profile</Card.Title>
             </Card.Header>
             <Separator />
             <Card.Body p={0}>
               <Stack gap={0}>
-                <Stack bg="gray.100" align='center' gap={0} py={4}>
-                  <Avatar.Root boxSize="150px">
+                <Stack bg='gray.100' align='center' gap={0} py={4}>
+                  <Avatar.Root boxSize='150px'>
                     <Avatar.Image />
                   </Avatar.Root>
                   <Heading fontSize='32px' mt={4}>
@@ -86,19 +123,34 @@ export default function Profile() {
                   <Stack gap={4}>
                     <Field.Root>
                       <Field.Label>Street/Building/Unit/Room</Field.Label>
-                      <Input readOnly value={userData.shipping_address.address_line} />
+                      <Input
+                        readOnly
+                        value={userData?.shipping_address?.address_line || ''}
+                      />
                     </Field.Root>
+
                     <Field.Root>
                       <Field.Label>Barangay</Field.Label>
-                      <Input readOnly value={userData.shipping_address.barangay} />
+                      <Input
+                        readOnly
+                        value={userData?.shipping_address?.barangay || ''}
+                      />
                     </Field.Root>
+
                     <Field.Root>
                       <Field.Label>City</Field.Label>
-                      <Input readOnly value={userData.shipping_address.city} />
+                      <Input
+                        readOnly
+                        value={userData?.shipping_address?.city || ''}
+                      />
                     </Field.Root>
+
                     <Field.Root>
                       <Field.Label>Province</Field.Label>
-                      <Input readOnly value={userData.shipping_address.province} />
+                      <Input
+                        readOnly
+                        value={userData?.shipping_address?.province || ''}
+                      />
                     </Field.Root>
                   </Stack>
                 </Stack>
@@ -122,13 +174,80 @@ export default function Profile() {
               <Card.Title>Orders</Card.Title>
             </Card.Header>
             <Separator />
-            <Card.Body>
-              <Stack alignItems="center" gap={4}>
-                <Text>No Orders</Text>
-                <Box>
-                  <Button rounded="full" bg="blue.600">Continue Shopping</Button>
-                </Box>
-              </Stack>
+            <Card.Body p={0}>
+              {orders.length > 0 ? (
+                <Table.ScrollArea>
+                  <Table.Root size='sm' stickyHeader>
+                    <Table.Header>
+                      <Table.Row>
+                        <Table.ColumnHeader>Ref #</Table.ColumnHeader>
+                        <Table.ColumnHeader>Amount</Table.ColumnHeader>
+                        <Table.ColumnHeader>Items</Table.ColumnHeader>
+                        <Table.ColumnHeader>Status</Table.ColumnHeader>
+                        <Table.ColumnHeader>Action</Table.ColumnHeader>
+                      </Table.Row>
+                    </Table.Header>
+                    <Table.Body>
+                      {orders.map((order) => (
+                        <Table.Row key={order.id}>
+                          <Table.Cell>{order.reference_number}</Table.Cell>
+                          <Table.Cell>{order.total_amount / 100}</Table.Cell>
+                          <Table.Cell>{order.cart_items.length}</Table.Cell>
+                          <Table.Cell>
+                            <Tag.Root>
+                              <Tag.Label>
+                                {order.status.toUpperCase()}
+                              </Tag.Label>
+                            </Tag.Root>
+                          </Table.Cell>
+                          <Table.Cell>
+                            <Menu.Root>
+                              <Menu.Trigger asChild>
+                                <Button variant='outline' size='sm'>
+                                  See More
+                                </Button>
+                              </Menu.Trigger>
+                              <Portal>
+                                <Menu.Positioner>
+                                  <Menu.Content>
+                                    {order.status !== 'paid' && (
+                                      <Menu.Item
+                                        value='complete-payment'
+                                        onClick={() =>
+                                          handleCompletePayment(
+                                            order.checkout_id,
+                                          )
+                                        }
+                                      >
+                                        Complete Payment
+                                      </Menu.Item>
+                                    )}
+                                    <Menu.Item value='view-cart'>
+                                      View Cart
+                                    </Menu.Item>
+                                    <Menu.Item value='full-details'>
+                                      Full Details
+                                    </Menu.Item>
+                                  </Menu.Content>
+                                </Menu.Positioner>
+                              </Portal>
+                            </Menu.Root>
+                          </Table.Cell>
+                        </Table.Row>
+                      ))}
+                    </Table.Body>
+                  </Table.Root>
+                </Table.ScrollArea>
+              ) : (
+                <Stack alignItems='center' gap={4}>
+                  <Text>No Orders</Text>
+                  <Box>
+                    <Button rounded='full' bg='blue.600'>
+                      Continue Shopping
+                    </Button>
+                  </Box>
+                </Stack>
+              )}
             </Card.Body>
           </Card.Root>
         </SimpleGrid>

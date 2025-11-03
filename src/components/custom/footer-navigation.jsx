@@ -20,18 +20,18 @@ export default function FooterNavigation() {
     >
       <SimpleGrid templateColumns={{ base: '1fr', md: '50% 50%' }} gap={4}>
         <Stack flex={1} gap={4}>
-          <Heading size={{ base: 'md', md: 'xl' }}>
+          <Heading size="md">
             Get awesome exclusives and more deals when you subscribe!
           </Heading>
           <Flex direction={{ base: 'column', md: 'row' }} gap={4}>
             <Input
-              size={{ base: 'md', md: 'xl' }}
+              size={{ base: 'md', lg: 'lg' }}
               placeholder='Enter your email address'
               backgroundColor='#fff'
               type='email'
             />
             <Button
-              size={{ base: 'md', md: 'xl' }}
+              size={{ base: 'md', lg: 'lg' }}
               backgroundColor='#fff'
               color='#0030FF'
               fontWeight='semibold'
@@ -42,39 +42,43 @@ export default function FooterNavigation() {
         </Stack>
 
         <Stack gap={4} alignItems={{ base: 'flex-start', md: 'flex-end' }}>
-          <Heading>Follow Us</Heading>
+          <Heading size="md">Follow Us</Heading>
           <Flex direction='row' alignItems='center' gap={2}>
-            <Icon size='2xl' color='#fff'>
-              <FaSquareFacebook />
-            </Icon>
-            <Icon size='2xl' color='#fff'>
-              <FaInstagram />
-            </Icon>
+            <Link href="https://web.facebook.com/SMMarkets" target="_blank" rel="noopener noreferrer">
+              <Icon height="50px" width="50px" color='#fff' cursor="pointer">
+                <FaSquareFacebook />
+              </Icon>
+            </Link>
+            <Link href="https://www.instagram.com/smmarkets" target="_blank" rel="noopener noreferrer">
+              <Icon height="50px" width="50px" color='#fff' cursor="pointer">
+                <FaInstagram />
+              </Icon>
+            </Link>
           </Flex>
         </Stack>
       </SimpleGrid>
-      <Stack gap={8} mt={8}>
+      <Stack gap={4} mt={8}>
         <SimpleGrid templateColumns={{ base: '1fr', md: '25% 50%' }} gap={4}>
           <Link href='/terms-and-conditions'>
-            <Heading>Terms & Conditions</Heading>
+            <Heading size="md">Terms & Conditions</Heading>
           </Link>
           <Link href='/profile'>
-            <Heading>My Account</Heading>
+            <Heading size="md">My Account</Heading>
           </Link>
-          <Link href='/privacy-policy'>
-            <Heading>Privacy Policy</Heading>
-          </Link>
+          {/* <Link href='/privacy-policy'>
+            <Heading size="md">Privacy Policy</Heading>
+          </Link> */}
           <Link href='/faqs'>
-            <Heading>FAQS</Heading>
+            <Heading size="md">FAQS</Heading>
           </Link>
           <Link href='/cookies-policy'>
-            <Heading>Cookies Policy</Heading>
+            <Heading size="md">Cookies Policy</Heading>
           </Link>
           <Link href='/contact-us'>
-            <Heading>Contact Us</Heading>
+            <Heading size="md">Contact Us</Heading>
           </Link>
         </SimpleGrid>
-        <Heading>
+        <Heading size="sm">
           Copyright © 2025 Supervalue, Inc. All rights reserved.
         </Heading>
       </Stack>

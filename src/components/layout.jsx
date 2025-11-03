@@ -23,7 +23,7 @@ export default function Layout({ children }) {
   const [isOpen, setIsOpen] = useState(false);
   const isMobile = useBreakpointValue({ base: true, md: false });
   const router = useRouter();
-  const {user} = useAuth();
+  const {userData} = useAuth();
 
   return (
     <Stack height='100dvh' gap={0}>
@@ -64,7 +64,7 @@ export default function Layout({ children }) {
         </Flex>
 
         <Flex ml={4} order={{ base: 3, md: 4 }} gap={4} alignItems='center'>
-          {user ? (
+          {userData ? (
             <Link href='/profile' passHref>
               <Icon as={LuUser} size='xl' color='#fff' cursor='pointer' />
             </Link>

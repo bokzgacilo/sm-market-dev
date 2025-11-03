@@ -44,7 +44,6 @@ export default function AdminLayout({ children }) {
                   icon={<LuUsers />}
                   label='Customers'
                 />
-                {/* <AdminNavLink href="/admin/branches" icon={<LuHouse />} label="Branches" /> */}
                 <AdminNavLink
                   href='/admin/sales'
                   icon={<LuDollarSign />}

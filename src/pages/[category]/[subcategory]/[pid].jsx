@@ -70,47 +70,46 @@ export default function ProductPage() {
 
   const addToCart = async () => {
     const auth_id = localStorage.getItem("auth_id")
-    alert(auth_id)
-    // const res = await supabase.auth.getUser();
-    // const user = res.data.user;
+    const res = await supabase.auth.getUser();
+    const user = res.data.user;
 
-    // if (!user) {
-    //   alert("Please sign in first.")
-    //   router.push('/signin');
-    //   return;
-    // } else {
-    //   try {
-    //     // 1️⃣ Fetch current cart
-    //     const { data: userData, error: fetchError } = await supabase
-    //       .from('users')
-    //       .select('cart_item')
-    //       .eq('id', user.id)
-    //       .single();
+    if (!auth_id) {
+      alert("Please sign in first.")
+      router.push('/signin');
+      return;
+    } else {
+      try {
+        // 1️⃣ Fetch current cart
+        const { data: userData, error: fetchError } = await supabase
+          .from('users')
+          .select('cart_item')
+          .eq('id', auth_id)
+          .single();
 
-    //     if (fetchError) throw fetchError;
+        if (fetchError) throw fetchError;
 
-    //     const currentCart = userData?.cart_item || [];
-    //     const existingIndex = currentCart.findIndex(item => item.pid === pid);
+        const currentCart = userData?.cart_item || [];
+        const existingIndex = currentCart.findIndex(item => item.pid === pid);
 
-    //     if (existingIndex !== -1) {
-    //       currentCart[existingIndex].quantity += quantity;
-    //       alert(`Product quantity updated to ${currentCart[existingIndex].quantity}`);
-    //     } else {
-    //       currentCart.push({ pid: pid, quantity: quantity });
-    //       alert('Item added to cart!');
-    //     }
+        if (existingIndex !== -1) {
+          currentCart[existingIndex].quantity += quantity;
+          alert(`Product quantity updated to ${currentCart[existingIndex].quantity}`);
+        } else {
+          currentCart.push({ pid: pid, quantity: quantity });
+          alert('Item added to cart!');
+        }
 
-    //     const { error: updateError } = await supabase
-    //       .from('users')
-    //       .update({ cart_item: currentCart })
-    //       .eq('id', user.id);
+        const { error: updateError } = await supabase
+          .from('users')
+          .update({ cart_item: currentCart })
+          .eq('id', auth_id);
 
-    //     if (updateError) throw updateError;
-    //   } catch (err) {
-    //     console.error(err);
-    //     alert('Failed to update cart.');
-    //   }
-    // }
+        if (updateError) throw updateError;
+      } catch (err) {
+        console.error(err);
+        alert('Failed to update cart.');
+      }
+    }
   }
 
   return (

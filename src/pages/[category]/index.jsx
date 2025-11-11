@@ -9,7 +9,7 @@ import {
   HStack,
   IconButton,
   NativeSelect,
-  Separator,
+  Text,
   SimpleGrid,
   Spinner,
   Stack,
@@ -24,57 +24,53 @@ import CustomBreadcrumb from '@/components/custom/CustomBreadcrumb';
 import ProductCard from '@/components/custom/ProductCard';
 import formatTitle from '@/helper/slug';
 import { getAllProducts, supabase } from '@/helper/supabase';
+import Filters from '@/components/custom/Filters';
 
 export default function CategoryPage() {
   const router = useRouter();
-  const { category } = router.query;
+  const { category, type = "all", sortBy = null, q = null} = router.query;
   const [subcategoriesArray, setSubcategoriesArray] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const getSubcategories = useCallback(async () => {
-    const { data: subcategories, error } = await supabase
-      .from('categories')
-      .select('subcategories')
-      .eq('slug', category)
-      .limit(1);
-
-    if (error) {
-      console.error(error);
-      return;
-    }
-
-    if (
-      Array.isArray(subcategories) &&
-      subcategories.length > 0 &&
-      Array.isArray(subcategories[0].subcategories) &&
-      subcategories[0].subcategories.length > 0
-    ) {
-      const formatted = subcategories[0].subcategories
-        .filter((sub) => sub && sub.trim() !== '')
-        .map((slug) => ({
-          path: slug,
-          name: slug
-            .split('-')
-            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' '),
-        }));
-      setSubcategoriesArray(formatted);
-    }
-  }, [category]);
-
   useEffect(() => {
+    if (!router.isReady) return; // Wait until router has the query params
+    if (!category) return;
+
+    const getSubcategories = async () => {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('subcategories')
+        .eq('slug', category)
+        .limit(1);
+      if (error) {
+        console.error(error)
+        return;
+      }
+      setSubcategoriesArray(data[0].subcategories)
+    }
+
     const fetchProducts = async () => {
-      const data = await getAllProducts(category, '');
-      setAllProducts(data);
-      setTimeout(() => {
+      setIsLoading(true);
+      try {
+        const products = await getAllProducts({
+          category: category,
+          type: type,
+          sortBy: sortBy,
+          q:q
+        });
+        setAllProducts(products);
+      } catch (err) {
+        console.error(err);
+        setAllProducts([]);
+      } finally {
         setIsLoading(false);
-      }, 1500);
+      }
     };
 
-    getSubcategories();
+    getSubcategories()
     fetchProducts();
-  }, [category, getSubcategories]);
+  }, [category, router])
 
   const pageTitle = category
     ? `${formatTitle(category)} | SM Supermarket`
@@ -86,7 +82,7 @@ export default function CategoryPage() {
         <title>{pageTitle}</title>
       </Head>
       <Stack p={{ base: 0, lg: 4 }} gap={{ base: 2, lg: 4 }}>
-        <Box p={{ base: 4, lg: 0 }} bg={{base: "gray.200", lg: "none"}}>
+        <Box p={{ base: 4, lg: 0 }} bg={{ base: "gray.200", lg: "none" }}>
           <CustomBreadcrumb
             data={{
               root: 'home',
@@ -94,7 +90,7 @@ export default function CategoryPage() {
             }}
           />
         </Box>
-        <Stack p={{base: 4, lg: 0}} gap={4}>
+        <Stack p={{ base: 4, lg: 0 }} gap={4}>
           <Heading size='3xl' color='#0030FF'>
             {formatTitle(category)}
           </Heading>
@@ -102,9 +98,15 @@ export default function CategoryPage() {
           {category && (
             <Flex direction='row' gap={4}>
               {subcategoriesArray.map((sub) => (
-                <Link key={sub.path} href={`/${category}/${sub.path}`}>
+                <Link key={sub} href={`/${category}/${sub}`}>
                   <Tag.Root size='xl' rounded='full'>
-                    <Tag.Label>{sub.name}</Tag.Label>
+                    <Tag.Label>
+                      {sub
+                        .replace(/-/g, " ") // replace hyphens with spaces
+                        .split(" ") // split into words
+                        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                        .join(" ")}
+                    </Tag.Label>
                   </Tag.Root>
                 </Link>
               ))}
@@ -114,30 +116,8 @@ export default function CategoryPage() {
 
         <Card.Root rounded={{ base: 0, lg: "md" }}>
           <Card.Body p={0}>
-            <Stack p={{base: 2, lg: 4}} gap={0}>
-              <HStack>
-                <Flex direction='row' gap={2}>
-                  <Button variant='solid' size="sm" rounded="full" colorPalette='blue'>
-                    All
-                  </Button>
-                  <Button variant='outline' size="sm" rounded="full">New</Button>
-                  <Button variant='outline' size="sm" rounded="full">Sale</Button>
-                </Flex>
-                <Flex gap={4} ml='auto' w='250px'>
-                  <IconButton rounded='full' variant='outline'>
-                    <FiFilter />
-                  </IconButton>
-                  <Separator orientation='vertical' />
-                  <NativeSelect.Root variant='subtle'>
-                    <NativeSelect.Field>
-                      <option>Popularity</option>
-                      <option>Prices: Low to High</option>
-                      <option>Prices: High to Low</option>
-                    </NativeSelect.Field>
-                    <NativeSelect.Indicator />
-                  </NativeSelect.Root>
-                </Flex>
-              </HStack>
+            <Stack p={{ base: 2, lg: 4 }} gap={0}>
+              <Filters router={router} />
               {isLoading ? (
                 <Center>
                   <Stack gap={8} p={4} alignItems='center'>
@@ -146,6 +126,9 @@ export default function CategoryPage() {
                   </Stack>
                 </Center>
               ) : (
+                allProducts.length === 0 ? 
+                <Text textAlign='center' color='gray.500' py={8}>No products to show</Text>
+                :
                 <SimpleGrid mt={4} columns={{ base: 2, md: 5 }} gap={{ base: 2, lg: 4 }}>
                   {allProducts.map((item) => (
                     <ProductCard data={item} key={item.id} />

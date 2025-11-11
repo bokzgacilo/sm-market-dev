@@ -7,28 +7,38 @@ import { Theme } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import { AuthProvider } from '@/context/AuthContext';
 import AdminLayout from './admin/layout';
+import { useEffect, useState } from 'react';
 
 export default function App({ Component, pageProps }) {
+  const noAdminLayout = ["/admin/signin"];
   const router = useRouter();
+  const isAdminRoute = router.pathname.startsWith('/admin/');
+  const useLayout = isAdminRoute && !noAdminLayout.includes(router.pathname);
+  const [authId, setAuthId] = useState(null)
 
-  const isAdminRoute = router.pathname.startsWith('/admin');
+  useEffect(() => {
+    if(localStorage.getItem("auth_id")){
+      setAuthId(localStorage.getItem("auth_id"))
+    }
+  }, [])
 
   return (
-    <AuthProvider>
-      <Provider>
-        <Theme appearance='light'>
-          {
-            isAdminRoute ?
-              <AdminLayout>
-                <Component {...pageProps} />
-              </AdminLayout>
-              :
-              <Layout>
-                <Component {...pageProps} />
-              </Layout>
-          }
-        </Theme>
-      </Provider>
-    </AuthProvider>
+  <Provider>
+    <Theme appearance="light">
+      {isAdminRoute ? (
+        useLayout ? (
+          <AdminLayout>
+            <Component {...pageProps} />
+          </AdminLayout>
+        ) : (
+          <Component {...pageProps} />
+        )
+      ) : (
+        <Layout auth={authId}>
+          <Component auth={authId} {...pageProps} />
+        </Layout>
+      )}
+    </Theme>
+  </Provider>
   );
 }

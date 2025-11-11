@@ -1,5 +1,5 @@
 import { supabase } from "@/helper/supabase";
-import { Button, Flex, Image, Separator, Heading, Textarea, SimpleGrid, Field, Input, Stack, Text, Card, CloseButton, HStack } from "@chakra-ui/react";
+import { Button, Flex, Image, Separator, Heading, Textarea, SimpleGrid, Field, Input, Stack, Text, Card, CloseButton, HStack, Box, Badge } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
 export default function ProductDetails({ slug, close }) {
@@ -16,7 +16,6 @@ export default function ProductDetails({ slug, close }) {
 
       if (error) {
         setProduct(null)
-        close()
         return;
       }
 
@@ -29,19 +28,43 @@ export default function ProductDetails({ slug, close }) {
   if(!product) return;
 
   return (
-    <Stack>
+    <Stack
+    >
+      <Flex p={4} bg="#fff" rounded="md">
+        <Button
+          colorPalette="blue"
+          onClick={
+            async () => {
+              const current_visibility = product.isActive;
+
+              const { data, error } = await supabase
+                .from('products')
+                .update({ isActive: !current_visibility })
+                .eq('id', product.id)
+                .select()
+
+
+              if(data){
+                setProduct((prev) => ({ ...prev, isActive: !prev.isActive }));
+                alert("Product visibility updated");
+              };
+            }
+          }
+        >Toggle Visibility</Button>
+      </Flex>
       <Card.Root>
-        <Card.Header>
+        <Card.Header p={4}>
           <HStack alignItems="center" justifyContent="space-between">
-            <Card.Title>{product.title}</Card.Title>
+            <Card.Title>{product.title} <Badge colorPalette={product.isActive ? "green" : "yellow"}>{product.isActive ? "Active" : "Archived"}</Badge></Card.Title>
             <CloseButton onClick={() => {
               setProduct(null)
               close()
             }} />
           </HStack>
         </Card.Header>
-        <Card.Body>
-          <Stack gap={4} p={0}>
+        <Separator />
+        <Card.Body p={4} >
+          <Stack gap={4} p={0} overflowY="auto" height="70dvh">
             <Stack border="1px solid lightgray" borderRadius={4} py={2}>
               <Flex alignItems="center" justifyContent="space-between" px={4}>
                 <Heading size="md">Inventory</Heading>
@@ -94,7 +117,6 @@ export default function ProductDetails({ slug, close }) {
               <Field.Label>Description</Field.Label>
               <Textarea value={product.description} />
             </Field.Root>
-
             <Heading size="md">Media</Heading>
             <SimpleGrid columns={3} gap={4}>
               {

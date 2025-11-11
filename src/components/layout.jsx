@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Button,
   Flex,
@@ -9,21 +11,19 @@ import {
 } from '@chakra-ui/react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FaSearch } from 'react-icons/fa';
 import { LuMenu, LuUser } from 'react-icons/lu';
-import { useAuth } from '@/context/AuthContext';
 import BranchSelector from './custom/BranchSelector';
 import CartDrawer from './custom/CartDrawer';
 import FooterNavigation from './custom/footer-navigation';
 import SearchInput from './custom/SearchInput';
 import SideNavigation from './custom/side-navigation';
 
-export default function Layout({ children }) {
+export default function Layout({ auth, children }) {
   const [isOpen, setIsOpen] = useState(false);
   const isMobile = useBreakpointValue({ base: true, md: false });
   const router = useRouter();
-  const {userData} = useAuth();
 
   return (
     <Stack height='100dvh' gap={0}>
@@ -57,14 +57,14 @@ export default function Layout({ children }) {
 
         >
           <InputGroup endElement={<FaSearch />}>
-            <SearchInput />
+            <SearchInput router={router} />
           </InputGroup>
           
           {isMobile && <Icon ml={4} as={LuMenu} size='2xl' color='#fff' cursor='pointer' onClick={() => setIsOpen(prev => !prev)} />}
         </Flex>
 
         <Flex ml={4} order={{ base: 3, md: 4 }} gap={4} alignItems='center'>
-          {userData ? (
+          {auth ? (
             <Link href='/profile' passHref>
               <Icon as={LuUser} size='xl' color='#fff' cursor='pointer' />
             </Link>
@@ -85,7 +85,10 @@ export default function Layout({ children }) {
             </Link>
           )}
 
-          <CartDrawer isMobile={isMobile} />
+          <CartDrawer 
+            auth={auth} 
+            isMobile={isMobile} 
+          />
         </Flex>
         {isOpen && isMobile && (
           <SideNavigation closeNav={() => setIsOpen(false)} order={6} w="full" flex={1} />

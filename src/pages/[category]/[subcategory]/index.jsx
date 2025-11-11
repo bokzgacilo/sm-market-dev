@@ -1,38 +1,52 @@
 import {
   Box,
-  Button,
   Card,
-  Flex,
+  Center,
   Heading,
-  HStack,
-  IconButton,
-  NativeSelect,
-  Separator,
   SimpleGrid,
   Stack,
+  Spinner,
   Text,
 } from '@chakra-ui/react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { FiFilter } from 'react-icons/fi';
 import CustomBreadcrumb from '@/components/custom/CustomBreadcrumb';
 import ProductCard from '@/components/custom/ProductCard';
 import formatTitle from '@/helper/slug';
 import { getAllProducts } from '@/helper/supabase';
+import Filters from '@/components/custom/Filters';
 
 export default function CategoryPage() {
   const router = useRouter();
-  const { category, subcategory } = router.query;
+  const { category, subcategory, type = "all", sortBy = null } = router.query;
   const [allProducts, setAllProducts] = useState([]);
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (!router.isReady) return; // Wait until router has the query params
+    if (!subcategory) return;
+
     const fetchProducts = async () => {
-      const data = await getAllProducts(category, subcategory);
-      setAllProducts(data);
+      setLoading(true);
+      try {
+        const products = await getAllProducts({
+          category: category,
+          subcategory: subcategory,
+          type: type,
+          sortBy: sortBy,
+        });
+        setAllProducts(products);
+      } catch (err) {
+        console.error(err);
+        setAllProducts([]);
+      } finally {
+        setLoading(false);
+      }
     };
+
     fetchProducts();
-  }, [subcategory, category]);
+  }, [category, router])
 
   const pageTitle = subcategory
     ? `${formatTitle(subcategory)} | SM Supermarket`
@@ -54,7 +68,7 @@ export default function CategoryPage() {
           />
         </Box>
 
-        <Stack p={{base: 4, lg: 0}}>
+        <Stack p={{ base: 4, lg: 0 }}>
           <Heading size='3xl' color='#0030FF'>
             {formatTitle(subcategory)}
           </Heading>
@@ -62,41 +76,24 @@ export default function CategoryPage() {
 
         <Card.Root rounded={{ base: 0, lg: 'md' }}>
           <Card.Body p={0}>
-            <Stack p={{base: 2, lg: 4}} gap={0}>
-              <HStack>
-                <Flex direction='row' gap={2}>
-                  <Button variant='solid' size="sm" rounded="full" colorPalette='blue'>
-                    All
-                  </Button>
-                  <Button variant='outline' size="sm" rounded="full">New</Button>
-                  <Button variant='outline' size="sm" rounded="full">Sale</Button>
-                </Flex>
-                <Flex gap={4} ml='auto' w='250px'>
-                  <IconButton rounded='full' variant='outline'>
-                    <FiFilter />
-                  </IconButton>
-                  <Separator orientation='vertical' />
-                  <NativeSelect.Root variant='subtle'>
-                    <NativeSelect.Field>
-                      <option>Popularity</option>
-                      <option>Prices: Low to High</option>
-                      <option>Prices: High to Low</option>
-                    </NativeSelect.Field>
-                    <NativeSelect.Indicator />
-                  </NativeSelect.Root>
-                </Flex>
-              </HStack>
-
-              {allProducts.length === 0 ? (
-                <Text textAlign='center' color='gray.500' py={8}>
-                  No products to show
-                </Text>
+            <Stack p={{ base: 2, lg: 4 }} gap={0}>
+              <Filters router={router} />
+              {loading ? (
+                <Center>
+                  <Stack gap={8} p={4} alignItems='center'>
+                    <Spinner color='blue.500' borderWidth='4px' size='xl' />
+                    <Heading>{pageTitle}</Heading>
+                  </Stack>
+                </Center>
               ) : (
-                <SimpleGrid mt={4} columns={{ base: 2, md: 5 }}>
-                  {allProducts.map((item) => (
-                    <ProductCard key={item.id} data={item} />
-                  ))}
-                </SimpleGrid>
+                allProducts.length === 0 ?
+                  <Text textAlign='center' color='gray.500' py={8}>No products to show</Text>
+                  :
+                  <SimpleGrid mt={4} columns={{ base: 2, md: 5 }} gap={{ base: 2, lg: 4 }}>
+                    {allProducts.map((item) => (
+                      <ProductCard data={item} key={item.id} />
+                    ))}
+                  </SimpleGrid>
               )}
             </Stack>
           </Card.Body>

@@ -20,7 +20,7 @@ export default function Customers() {
 
   return (
     <Stack
-      p={4}
+      py={4}
     >
       <Card.Root>
         <Card.Header p={4}>

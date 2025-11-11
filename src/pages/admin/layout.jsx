@@ -1,8 +1,8 @@
 import {
+  Button,
   Card,
   Container,
   Flex,
-  Heading,
   Icon,
   Image,
   Separator,
@@ -11,48 +11,64 @@ import {
   Text,
 } from '@chakra-ui/react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
 import {
   LuBox,
   LuChevronRight,
   LuClipboard,
   LuDollarSign,
+  LuDoorClosed,
+  LuShoppingBag,
+  LuTruck,
   LuUsers,
 } from 'react-icons/lu';
 
 export default function AdminLayout({ children }) {
+  const router = useRouter();
   const navItems = [
-    { href: '/admin/products', label: 'Products', icon: LuBox },
-    { href: '/admin/orders', label: 'Orders', icon: LuClipboard },
+    { href: '/', label: 'Go Shopping', icon: LuShoppingBag },
     { href: '/admin/customers', label: 'Customers', icon: LuUsers },
-    // { href: '/admin/sales', label: 'Sales', icon: LuDollarSign },
+    { href: '/admin/deliveries', label: 'Deliveries', icon: LuTruck },
+    { href: '/admin/orders', label: 'Orders and Sales', icon: LuClipboard },
+    { href: '/admin/products', label: 'Products', icon: LuBox },
   ];
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  useEffect(() => {
+    const auth = localStorage.getItem("auth_admin");
+    if (!auth) {
+      router.replace("/admin/signin");
+    } else {
+      setCheckingAuth(false); // allow rendering
+    }
+  }, [router]);
+
+  if (checkingAuth) {
+    return null; // or a spinner/loader
+  }
 
   return (
     <Container p={0} maxWidth="full" bg="gray.200">
-      <SimpleGrid templateColumns="20% 1fr" height="100dvh" gap={0}>
-        <Stack p={4}>
-          <Card.Root bg="blue.600">
+      <SimpleGrid templateColumns="400px 1fr" height="100dvh" gap={4} px={4}>
+        <Stack py={4}>
+          <Card.Root>
             <Card.Body p={0}>
-              <Stack p={4} color="#fff">
+              <Stack p={4}>
                 <Image
-                  src="/images/smlogo.webp"
+                  src="/images/sm-markets-blue.jpg"
                   width="70%"
-                  my={4}
+                  my={8}
                   alignSelf="center"
                   alt="SM Logo"
                 />
-                <Heading mt={4} size="2xl">
-                  Menu
-                </Heading>
-                <Separator />
-
+                <Separator mb={4} />
                 {navItems.map((item) => (
                   <Link key={item.href} href={item.href}>
                     <Flex
                       align="center"
                       direction="row"
                       gap={4}
-                      color="#fff"
                       p={4}
                       borderRadius="md"
                       _hover={{ bg: 'whiteAlpha.200' }}
@@ -63,12 +79,21 @@ export default function AdminLayout({ children }) {
                     </Flex>
                   </Link>
                 ))}
+                <Button
+                  variant="outline"
+                  rounded="full"
+                  mt={4} 
+                  size="xl"
+                  colorPalette="red"
+                  onClick={() => {
+                    localStorage.removeItem("auth_admin");
+                    router.replace("/admin/signin");
+                  }}
+                ><LuDoorClosed />Sign Out</Button>
               </Stack>
             </Card.Body>
           </Card.Root>
         </Stack>
-
-        {/* ✅ Main content area */}
         {children}
       </SimpleGrid>
     </Container>

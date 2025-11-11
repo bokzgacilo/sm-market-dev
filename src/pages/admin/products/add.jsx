@@ -1,4 +1,4 @@
-import { Button, Card, Checkbox, Field, FileUpload, Image, Input, NativeSelect, NumberInput, SimpleGrid, Stack, Text, Textarea } from "@chakra-ui/react";
+import { Button, Card, Checkbox, Field, FileUpload, Image, Input, NativeSelect, NumberInput, Separator, SimpleGrid, Stack, Text, Textarea } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { LuUpload } from "react-icons/lu";
 import ProductViewer from "@/components/custom/ProductViewer";
@@ -154,13 +154,14 @@ export default function AddProduct() {
   }
 
   return (
-    <Stack p={4}>
+    <Stack py={4}>
       <Card.Root>
         <Card.Header p={4}>
-          <Card.Title>
+          <Card.Title fontSize="xl">
             Add Product
           </Card.Title>
         </Card.Header>
+        <Separator />
         <Card.Body>
           <SimpleGrid columns={3} gap={4}>
             <Stack gap={4}>

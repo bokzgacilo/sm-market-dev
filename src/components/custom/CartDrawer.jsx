@@ -19,28 +19,35 @@ const shipping_methods = [
   },
 ];
 
-export default function CartDrawer({ isMobile }) {
-  const { cartItems, refreshCart, userData } = useAuth();
+export default function CartDrawer({auth, isMobile }) {
   const [open, setOpen] = useState(false)
   const [method, setMethod] = useState("pickup")
   const [loading, setLoading] = useState(false)
+  const [cartItems, setCartItems] = useState([])
 
   useEffect(() => {
-    const fetchCart = async () => {
-      await refreshCart();
-    };
+    const fetchCartItems = async () => {
+      const {data} = await supabase
+        .from('users')
+        .select('cart_item')
+        .eq('id', auth)
+        .single();
 
-    fetchCart();
+      setCartItems(data.cart_item)
+    }
+    if(auth){
+      fetchCartItems();  
+    }
   }, [open]);
 
   const handleRemove = async (pidToRemove) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    const auth_id = localStorage.getItem("auth_id")
+    if (!auth_id) return;
 
     const { data: userData } = await supabase
       .from('users')
       .select('cart_item')
-      .eq('id', user.id)
+      .eq('id', auth_id)
       .single();
 
     const updatedCart = (userData?.cart_item || []).filter(item => item.pid !== pidToRemove);
@@ -48,12 +55,21 @@ export default function CartDrawer({ isMobile }) {
     await supabase
       .from('users')
       .update({ cart_item: updatedCart })
-      .eq('id', user.id);
+      .eq('id', auth_id);
 
     await refreshCart()
   };
 
   const handleCheckout = async () => {
+    const auth_id = localStorage.getItem("auth_id")
+    const {data: userData} = await supabase
+      .from('users')
+      .select('shipping_address')
+      .eq('id', auth_id)
+      .single()
+
+    
+
     if (method === "delivery" && !userData.shipping_address) {
       alert("Please set your shipping address in your profile.");
       window.location.href = "/profile";
@@ -74,12 +90,12 @@ export default function CartDrawer({ isMobile }) {
           const product = products.find(p => p.slug === cartItem.pid);
 
 
-          if (!product) return null; // skip if product not found
+          if (!product) return null;
           return {
             name: product.title,
-            amount: product.price * 100, // convert PHP to centavos and multiply by qty
+            amount: product.price * 100,
             currency: 'PHP',
-            quantity: cartItem.quantity, // PayMongo expects 1 per line item since amount includes quantity
+            quantity: cartItem.quantity,
           };
         }).filter(Boolean);
 
@@ -126,7 +142,7 @@ export default function CartDrawer({ isMobile }) {
           const order_json = {
             checkout_id: cid,
             reference_number: ref,
-            customer_id: userData.id,
+            customer_id: auth_id,
             cart_items: cartItems,
             total_amount: total_amount,
             status: "pending",
@@ -146,7 +162,7 @@ export default function CartDrawer({ isMobile }) {
             const { error: updateError } = await supabase
               .from("users")
               .update({ cart_item: [] })
-              .eq("id", userData.id);
+              .eq("id", auth_id);
 
             if (updateError) {
               console.error("Error clearing cart:", updateError.message);

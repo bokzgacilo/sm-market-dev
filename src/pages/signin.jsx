@@ -16,19 +16,26 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import CustomBreadcrumb from '@/components/custom/CustomBreadcrumb';
 import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/helper/supabase';
 
 export default function Signin() {
   const router = useRouter();
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
-  const { signIn, user, userData} = useAuth();
+  const [auth, setAuth] = useState(null)
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  if (userData) {
-    router.replace("/profile");
-    return;
-  }
+  useEffect(() => {
+    if (!localStorage.getItem("auth_id")) return;
+
+    console.log("tets")
+  }, [])
+
+  // if (auth) {
+  //   router.replace("/profile");
+  //   return;
+  // }
 
   return (
     <>
@@ -39,12 +46,12 @@ export default function Signin() {
         <link rel='icon' href='/favicon.ico' />
       </Head>
 
-      <Stack gap={4} p={4} alignItems="center">
+      <Stack gap={4} p={4} mt={{ base: 8, lg: 4 }} alignItems="center">
         <Heading size='3xl' color='#0030FF'>
           Welcome Back!
         </Heading>
 
-        <SimpleGrid columns={{ base: 1, md: 1 }} justif gap={6} width={{base: "100%", lg: "30%"}}>
+        <SimpleGrid columns={{ base: 1, md: 1 }} justif gap={6} width={{ base: "100%", lg: "30%" }}>
           <Card.Root>
             <Card.Body>
               <Stack gap={4}>
@@ -77,15 +84,27 @@ export default function Signin() {
                   size='xl'
                   loading={loading}
                   onClick={async () => {
-                    setLoading(true)
+                    setLoading(true);
                     try {
-                      await signIn(form.email, form.password)
-                    } catch (err) {
-                      console.error(err)
-                    } finally {
-                      setLoading(false)
-                    }
+                      const { data, error } = await supabase.auth.signInWithPassword({
+                        email: form.email,
+                        password: form.password,
+                      });
 
+                      if (error) throw error;
+
+                      const user = data.user;
+                      if (user) {
+                        localStorage.setItem("auth_id", user.id);
+                        alert("Login successful!");
+                        router.replace("/profile"); // redirect to profile
+                      }
+                    } catch (err) {
+                      console.error(err.message);
+                      alert("Login failed. Please check your email and password.");
+                    } finally {
+                      setLoading(false);
+                    }
                   }}
                 >
                   Sign In

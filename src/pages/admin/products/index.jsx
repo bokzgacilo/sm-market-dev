@@ -1,4 +1,4 @@
-import { Button, ButtonGroup, Card, Field, Flex, Heading, HStack, IconButton, Image, Input, Pagination, Separator, SimpleGrid, Skeleton, SkeletonText, Stack, Table, Text, Textarea } from "@chakra-ui/react";
+import { Badge, Box, Button, ButtonGroup, Card, Field, Flex, Heading, HStack, IconButton, Image, Input, Pagination, Separator, SimpleGrid, Skeleton, SkeletonText, Stack, Table, Text, Textarea } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { LuChevronLeft, LuChevronRight, LuPlus } from "react-icons/lu";
 import { supabase } from "@/helper/supabase";
@@ -28,32 +28,58 @@ export default function ProductIndex() {
         .range(start, end);
 
       if (data) {
-        setAllProducts(data)
-        isSetLoadingProducts(false)
+        setAllProducts(data);
+        isSetLoadingProducts(false);
         setTotalCount(count);
       }
-    }
+    };
 
     fetchAllProducts();
-  }, [page])
+
+    // Subscribe to real-time changes
+    const subscription = supabase
+      .channel("public:products")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "products" },
+        (payload) => {
+          console.log("Product change detected:", payload);
+          fetchAllProducts(); // re-fetch on change
+        }
+      )
+      .subscribe();
+
+    // Cleanup on unmount
+    return () => {
+      supabase.removeChannel(subscription);
+    };
+  }, [page]);
 
   return (
     <>
       <Head>
-        <title>Admin | SM Market Mapua</title>
+        <title>Products | Admin | SM Market Mapua</title>
       </Head>
-      <SimpleGrid p={4} templateColumns={selectedSlug ? "1fr 50%" : "1fr"} backgroundColor="gray.200" gap={4}>
+      <SimpleGrid py={4} templateColumns={selectedSlug ? "1fr 50%" : "1fr"} backgroundColor="gray.200" gap={4} overflow="hidden">
         <Stack>
+          <Flex bg="white" p={4} rounded="md" alignItems="center" justifyContent="space-between">
+            <Link href="/admin/products/add">
+              <Button bg="blue.600" >
+                Add Product
+                <LuPlus />
+              </Button>
+            </Link>
+            <Flex gap={4} px={4}>
+              <Input placeholder="Search product" />
+              <Button bg="blue.600" >Search</Button>
+            </Flex>
+          </Flex>
+
           <Card.Root>
             <Card.Header p={4}>
               <Flex direction="row" alignItems="center" justifyContent="space-between">
-                <Card.Title fontSize="2xl">Products</Card.Title>
-                <Link href="/admin/products/add">
-                  <Button rounded="full" bg="blue.600">
-                    Add Product
-                    <LuPlus />
-                  </Button>
-                </Link>
+                <Card.Title fontSize="xl">Products</Card.Title>
+
               </Flex>
             </Card.Header>
             <Card.Body
@@ -65,17 +91,13 @@ export default function ProductIndex() {
                 px={0}
                 py={4}
               >
-                <Flex gap={4} px={4}>
-                  <Input size="sm" />
-                  <Button bg="blue.600" size="sm">Search</Button>
-                </Flex>
-
                 <Table.Root interactive>
                   <Table.Header>
                     <Table.Row>
                       <Table.ColumnHeader w="10%">Display</Table.ColumnHeader>
                       <Table.ColumnHeader>Name</Table.ColumnHeader>
                       <Table.ColumnHeader>Price</Table.ColumnHeader>
+                      <Table.ColumnHeader>Visibility</Table.ColumnHeader>
                     </Table.Row>
                   </Table.Header>
                   <Table.Body>
@@ -103,13 +125,16 @@ export default function ProductIndex() {
                           }}
                         >
                           <Table.Cell>
-                            <Image objectFit="contain" width="40px" height="40px" src={product.images[0]} />
+                            <Image objectFit="contain" width="30px" height="30px" src={product.images[0]} />
                           </Table.Cell>
                           <Table.Cell>
                             <Text fontWeight="semibold">{product.title}</Text>
                           </Table.Cell>
                           <Table.Cell>
                             <Text fontWeight="semibold">PHP {product.price}</Text>
+                          </Table.Cell>
+                          <Table.Cell>
+                            <Badge colorPalette={product.isActive ? "green" : "yellow"}>{product.isActive ? "Active" : "Archived"}</Badge>
                           </Table.Cell>
 
                         </Table.Row>

@@ -129,7 +129,7 @@ export default function CategoryPage() {
                 allProducts.length === 0 ? 
                 <Text textAlign='center' color='gray.500' py={8}>No products to show</Text>
                 :
-                <SimpleGrid mt={4} columns={{ base: 2, md: 5 }} gap={{ base: 2, lg: 4 }}>
+                <SimpleGrid mt={4} columns={{ base: 2, md: 4 }} gap={{ base: 2, lg: 4 }}>
                   {allProducts.map((item) => (
                     <ProductCard pid={item.id} key={item.id} />
                   ))}

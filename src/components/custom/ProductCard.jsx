@@ -92,7 +92,7 @@ export default function ProductCard({ pid, ...props }) {
       const { error: updateError } = await supabase
         .from("users")
         .update({ cart_item: currentCart })
-        .eq("id", user.id);
+        .eq("id", localStorage.getItem("auth_id"));
 
       if (updateError) throw updateError;
 

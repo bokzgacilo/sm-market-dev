@@ -5,24 +5,12 @@ import { LuShoppingCart } from "react-icons/lu";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/helper/supabase";
 import CartItem from "./CartItem";
-
-const shipping_methods = [
-  {
-    value: "pickup",
-    title: "Pickup",
-    description: "Collect your order directly from our store or branch."
-  },
-  {
-    value: "delivery",
-    title: "Delivery",
-    description: "Have your order conveniently delivered to your address."
-  },
-];
+import { useRouter } from "next/router";
 
 export default function CartDrawer({auth, isMobile }) {
   const [open, setOpen] = useState(false)
-  const [method, setMethod] = useState("pickup")
   const [loading, setLoading] = useState(false)
+  const router = useRouter();
   const [cartItems, setCartItems] = useState([])
 
   useEffect(() => {
@@ -56,8 +44,6 @@ export default function CartDrawer({auth, isMobile }) {
       .from('users')
       .update({ cart_item: updatedCart })
       .eq('id', auth_id);
-
-    await refreshCart()
   };
 
   const handleCheckout = async () => {
@@ -67,9 +53,6 @@ export default function CartDrawer({auth, isMobile }) {
       .select('shipping_address')
       .eq('id', auth_id)
       .single()
-
-    
-
     if (method === "delivery" && !userData.shipping_address) {
       alert("Please set your shipping address in your profile.");
       window.location.href = "/profile";
@@ -232,28 +215,12 @@ export default function CartDrawer({auth, isMobile }) {
               </Stack>
             </Drawer.Body>
             <Drawer.Footer justifyContent="flex-start" p={4} hidden={cartItems.length === 0}>
-              <Stack w="full">
-                <RadioCard.Root disabled={loading} value={method} onValueChange={(e) => setMethod(e.value)} defaultValue="pickup" size="sm">
-                  <RadioCard.Label>Shipping Method</RadioCard.Label>
-                  <Stack>
-                    {shipping_methods.map((item) => (
-                      <RadioCard.Item key={item.value} value={item.value}>
-                        <RadioCard.ItemHiddenInput />
-                        <RadioCard.ItemControl>
-                          <RadioCard.ItemContent>
-                            <RadioCard.ItemText>{item.title}</RadioCard.ItemText>
-                          </RadioCard.ItemContent>
-                          <RadioCard.ItemIndicator />
-                        </RadioCard.ItemControl>
-                      </RadioCard.Item>
-                    ))}
-                  </Stack>
-                </RadioCard.Root>
-                <Button colorPalette='blue' rounded="full" size="lg" loading={loading} onClick={handleCheckout}>
-                  Checkout
+              <Drawer.ActionTrigger asChild>
+                <Button w="full" colorPalette='blue' rounded="full" size="xl" loading={loading} onClick={() => router.push('/cart')}>
+                  Review Cart
                   <LuShoppingCart />
                 </Button>
-              </Stack>
+              </Drawer.ActionTrigger>
             </Drawer.Footer>
           </Drawer.Content>
         </Drawer.Positioner>

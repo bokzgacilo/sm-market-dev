@@ -44,16 +44,19 @@ const branches = [
   {
     name: 'SM Aura Premier',
     city: 'Metro Manila, Taguig, PH',
+    code: "aura",
     coords: [14.5523, 121.048],
   },
   {
     name: 'SM Makati',
     city: 'Metro Manila, Makati, PH',
+    code: "makati",
     coords: [14.5535, 121.0244],
   },
   {
     name: 'SM Sta. Mesa',
     city: 'Metro Manila, Manila, PH',
+    code: "sta_mesa",
     coords: [14.6026, 121.0178],
   },
 ];
@@ -120,6 +123,7 @@ export default function BranchSelector() {
                         const branchData = {
                           branch_name: branch.name,
                           branch_address: branch.city,
+                          branch_code: branch.code
                         };
                         localStorage.setItem(
                           'branch_location',

@@ -184,7 +184,7 @@ export default function AddProduct() {
                   <Field.Label>Price</Field.Label>
                   <NumberInput.Root
                     value={form.price}
-                    onChange={(e) => setForm({ ...form, price: e.target.value })}
+                    onValueChange={(e) => setForm({ ...form, price: e.value })}
                     min={10}
                   >
                     <NumberInput.Control />
@@ -195,7 +195,7 @@ export default function AddProduct() {
                   <Field.Label>Compare At Price</Field.Label>
                   <NumberInput.Root
                     value={form.compare_at_price}
-                    onChange={(e) => setForm({ ...form, compare_at_price: e.target.value })}
+                    onValueChange={(e) => setForm({ ...form, compare_at_price: e.value })}
                     min={10}
                   >
                     <NumberInput.Control />
@@ -246,7 +246,7 @@ export default function AddProduct() {
                   <Field.Label>Sale Price</Field.Label>
                   <NumberInput.Root
                     value={form.sale_price}
-                    onChange={(e) => setForm({ ...form, sale_price: e.target.value })}
+                    onValueChange={(e) => setForm({ ...form, sale_price: e.value })}
                     defaultValue="10"
                     min={5}
                   >

@@ -19,13 +19,10 @@ export default function Home() {
     const fetchFeaturedProducts = async () => {
       const {data} = await supabase
         .from('products')
-        .select('*')
+        .select('id')
         .limit(8)
-
-      console.log(data)
       setFeaturedProducts(data)
     }
-
     fetchFeaturedProducts();
   }, [])
 
@@ -44,10 +41,10 @@ export default function Home() {
           }
         </Slider>
       </Box>
-      <Stack bg="yellow.500" p={{base: 2, lg: 4}}>
-        <SimpleGrid columns={{base: 2, lg: 4}} gap={{base: 2, lg: 4}}>
+      <Stack bg="yellow.500" p={{base: 2, lg: 4}} width="100%">
+        <SimpleGrid columns={{base: 2, lg: 4}} gap={{base: 2, lg: 4}} width="100%">
           {featuredProducts.map((item) => (
-            <ProductCard data={item} key={item.id} bg="#fff" rounded="md"/>
+            <ProductCard pid={item.id} key={item} bg="#fff" rounded="md"/>
           ))}
         </SimpleGrid>
       </Stack>

@@ -131,7 +131,7 @@ export default function CategoryPage() {
                 :
                 <SimpleGrid mt={4} columns={{ base: 2, md: 5 }} gap={{ base: 2, lg: 4 }}>
                   {allProducts.map((item) => (
-                    <ProductCard data={item} key={item.id} />
+                    <ProductCard pid={item.id} key={item.id} />
                   ))}
                 </SimpleGrid>
               )}

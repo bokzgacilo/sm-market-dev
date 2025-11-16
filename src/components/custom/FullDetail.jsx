@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/helper/supabase";
 import OrderItem from "./OrderItem";
 import axios from "axios";
-import { LuBox, LuCheck, LuChevronLeft, LuChevronRight, LuClipboard, LuTruck } from "react-icons/lu";
+import { LuBox, LuCheck, LuClipboard, LuTruck } from "react-icons/lu";
 
 const steps = [
   {
@@ -31,32 +31,56 @@ export default function FullDetail({ order: orderData, cart }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-
     const fetchOrder = async () => {
       const { data, error } = await supabase
         .from("orders")
-        .select('*')
-        .eq('reference_number', orderData.reference_number)
-        .single()
+        .select("*")
+        .eq("reference_number", orderData.reference_number)
+        .single();
 
-      setOrder(data)
-      console.log(data)
-      if (data) setLoading(false)
-    }
+      if (error) console.error(error);
+      setOrder(data);
+      if (data) setLoading(false);
+    };
 
     const fetchDelivery = async () => {
-      const { data } = await supabase
-        .from('deliveries')
-        .select('*')
-        .eq('order_ref', orderData.reference_number)
+      const { data, error } = await supabase
+        .from("deliveries")
+        .select("*")
+        .eq("order_ref", orderData.reference_number);
 
+      if (error) console.error(error);
       console.log(data)
-      setDelivery(data)
-    }
+      setDelivery(data[0]);
+    };
 
+    // Initial fetch
     fetchOrder();
     fetchDelivery();
-  }, [])
+
+    // Realtime subscription — deliveries only
+    const channel = supabase
+      .channel("delivery_updates")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "deliveries",
+          filter: `order_ref=eq.${orderData.reference_number}`,
+        },
+        (data) => {
+          console.log(data)
+          fetchDelivery(); // refetch only deliveries
+        }
+      )
+      .subscribe();
+
+    // Cleanup on unmount
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [orderData.reference_number]);
 
   const handleCompletePayment = async (cid) => {
     const secretKey = 'sk_test_Y5BxqyZzNUjNgMLebHFh1Jhy';

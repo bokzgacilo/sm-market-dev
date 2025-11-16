@@ -14,7 +14,7 @@ export const getAllProducts = async ({
   q = null,          // search keyword
 } = {}) => {
 
-  let query = supabase.from("products").select("*").eq("isActive", true);
+  let query = supabase.from("products").select("id").eq("isActive", true);
 
   // Category filter
   if (category) query = query.eq("category", category);
@@ -27,7 +27,7 @@ export const getAllProducts = async ({
     yesterday.setDate(now.getDate() - 1);
     query = query.gte("created_at", yesterday.toISOString());
   } else if (type === "sale") {
-    query = query.not("compare_at_price", "is", null); // products with compare_at_price
+    query = query.eq("isSale", true);
   }
 
   // Brand filter

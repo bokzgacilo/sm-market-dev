@@ -40,11 +40,10 @@ export default function Profile() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
-    const authId = localStorage.getItem("auth_id");
-    if (!authId) {
+    if (!localStorage.getItem("auth_id")) {
       router.replace("/signin");
     } else {
-      setAuth(authId);
+      setAuth(localStorage.getItem("auth_id"));
     }
     setIsCheckingAuth(false);
   }, [router]);
@@ -57,9 +56,8 @@ export default function Profile() {
         .from('users')
         .select('*')
         .eq('id', localStorage.getItem("auth_id"))
-        .single()
 
-      setUserData(data)
+      setUserData(data[0])
     }
 
     const fetchAllOrders = async () => {

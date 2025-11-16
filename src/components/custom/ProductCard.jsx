@@ -1,177 +1,235 @@
-import { Button, CloseButton, Dialog, Flex, Image, NumberInput, Box, Portal, Stack, Text } from '@chakra-ui/react';
-import Link from 'next/link';
-import { useRouter } from 'next/router';
-import { useState } from 'react';
-import { LuPlus, LuShoppingCart } from 'react-icons/lu';
-import { supabase } from '@/helper/supabase';
+import {
+  Button,
+  CloseButton,
+  Dialog,
+  Flex,
+  Image,
+  NumberInput,
+  Box,
+  Portal,
+  Stack,
+  Text,
+  Heading,
+  Skeleton,
+  SkeletonText,
+} from "@chakra-ui/react";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { useState, useEffect } from "react";
+import { LuPlus, LuShoppingCart } from "react-icons/lu";
+import { supabase } from "@/helper/supabase";
 
-export default function ProductCard({ data, ...props }) {
-  const [qty, SetQty] = useState(1)
+export default function ProductCard({ pid, ...props }) {
   const router = useRouter();
-  const [isOpen, setIsOpen] = useState(false)
+
+  const [qty, setQty] = useState(1);
+  const [product, setProduct] = useState(null);
+  const [inventory, setInventory] = useState(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch product and inventory
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [productRes, inventoryRes] = await Promise.all([
+          supabase.from("products").select("*").eq("id", pid).single(),
+          supabase.from("inventory").select("*").eq("product_id", pid).single(),
+        ]);
+
+        if (productRes.error) throw productRes.error;
+        if (inventoryRes.error) throw inventoryRes.error;
+
+        setProduct(productRes.data);
+
+        const branch = JSON.parse(localStorage.getItem("branch_location"));
+        const branchInventory = branch
+          ? inventoryRes.data?.[branch.branch_code]
+          : null;
+
+        setInventory(branchInventory || { available: 0, sold: 0 });
+      } catch (err) {
+        console.error("Error fetching product:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [pid]);
 
   const addToCart = async () => {
-    console.log(data)
-    const res = await supabase.auth.getUser();
-    const user = res.data.user;
-
-    if (!user) {
-      alert("Please sign in first.")
-      router.push('/signin');
-      return;
-    } else {
-      try {
-        // 1️⃣ Fetch current cart
-        const { data: userData, error: fetchError } = await supabase
-          .from('users')
-          .select('cart_item')
-          .eq('id', user.id)
-          .single();
-
-        if (fetchError) throw fetchError;
-
-        const currentCart = userData?.cart_item || [];
-        const existingIndex = currentCart.findIndex(item => item.pid === data.slug);
-
-        if (existingIndex !== -1) {
-          currentCart[existingIndex].quantity += qty;
-          alert(`Product quantity updated to ${currentCart[existingIndex].quantity}`);
-        } else {
-          currentCart.push({ pid: data.slug, quantity: qty });
-          alert('Item added to cart!');
-        }
-
-        const { error: updateError } = await supabase
-          .from('users')
-          .update({ cart_item: currentCart })
-          .eq('id', user.id);
-
-        setIsOpen(false)
-        if (updateError) throw updateError;
-
-      } catch (err) {
-        console.error(err);
-        alert('Failed to update cart.');
+    try {
+      if (!localStorage.getItem("auth_id")) {
+        alert("Please sign in first.");
+        router.push("/signin");
+        return;
       }
+
+      const { data: userData, error: fetchError } = await supabase
+        .from("users")
+        .select("cart_item")
+        .eq("id", localStorage.getItem("auth_id"))
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      const currentCart = userData?.cart_item || [];
+      const existingItemIndex = currentCart.findIndex(
+        (item) => item.pid === product.slug
+      );
+
+      if (existingItemIndex !== -1) {
+        currentCart[existingItemIndex].quantity += qty;
+        alert(
+          `Product quantity updated to ${currentCart[existingItemIndex].quantity}`
+        );
+      } else {
+        currentCart.push({ pid: product.slug, quantity: qty });
+        alert("Item added to cart!");
+      }
+
+      const { error: updateError } = await supabase
+        .from("users")
+        .update({ cart_item: currentCart })
+        .eq("id", user.id);
+
+      if (updateError) throw updateError;
+
+      setIsOpen(false);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update cart.");
     }
+  };
+
+  if (loading || !product) {
+    return (
+      <Stack gap={4}>
+        <Skeleton width="100%" height={{ base: "150px", md: "300px" }} />
+        <SkeletonText noOfLines={1} />
+        <SkeletonText w="50%" noOfLines={1} />
+        <Skeleton width="100%" height="40px" />
+      </Stack>
+    );
   }
 
   return (
     <Stack
       p={{ base: 2, md: 4 }}
-      gap={0}
-      border="1px solid transparent"       // default border (invisible)
-      borderRadius="md"                     // optional, for smooth corners
-      _hover={{ borderColor: "gray.300" }} // change border color on hover
+      gap={2}
+      border="1px solid transparent"
+      borderRadius="md"
+      _hover={{ borderColor: "gray.300" }}
       {...props}
     >
-      <Link
-        href={`/${data.category}/${data.subcategory}/${data.slug}`}
-        passHref
-      >
-        <Stack>
-          <Stack
-            position="relative"
-          >
+      <Link href={`/${product.category}/${product.subcategory}/${product.slug}`} passHref>
+        <Stack gap={4}>
+          <Stack position="relative">
             <Image
-              mb={{ base: 0, md: 6 }}
-              alt={data.title}
-              src={data.images[0]}
-              width='100%'
-              height={{ base: '150px', md: '300px' }}
-              objectFit='contain'
+              alt={product.title}
+              src={product.images?.[0]}
+              width="100%"
+              height={{ base: "150px", md: "300px" }}
+              objectFit="cover"
             />
-            <Flex
-              direction="row"
-              position="absolute"
-              top={0}
-              gap={2}
-            >
-              {data.created_at && (() => {
-                const createdDate = new Date(data.created_at);
-                const now = new Date();
-                const diffInMs = now - createdDate;
-                const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
 
+            <Flex position="absolute" top={0} gap={2}>
+              {(() => {
+                const createdDate = new Date(product.created_at);
+                const diffInDays =
+                  (new Date() - createdDate) / (1000 * 60 * 60 * 24);
                 return diffInDays <= 1 ? (
-                  <Box
-                    fontSize="10px"
-                    padding="0.5rem 1rem"
-                    bg="red.500"
-                    color="#fff"
-                    rounded="full"
-                    fontWeight="bold"
-                  >
-                    <Text>New!</Text>
-                  </Box>
+                  <Badge bg="red.500" color="white">
+                    New!
+                  </Badge>
                 ) : null;
               })()}
 
-              {data.isSale &&
-                <Box
-                  fontSize="10px"
-                  padding="0.5rem 1rem"
-                  bg="yellow.400"
-                  fontWeight="bold"
-                  rounded="full"
-                >
-                  <Text>Sale!</Text>
-                </Box>
-              }
-
+              {product.isSale && <Badge bg="yellow.400">Sale!</Badge>}
             </Flex>
-
           </Stack>
 
-          <Text
-            fontSize={{ base: '12px', md: '15px' }}
-            color='#0030FF'
-            fontWeight='semibold'
-            mb={4}
-          >
-            {data.title}
-          </Text>
+          <Heading fontSize={{ base: "md", lg: "xl" }} color="#0030FF" fontWeight="semibold">
+            {product.title}
+          </Heading>
         </Stack>
       </Link>
-      <Text fontSize='26px' mt="auto" fontWeight='700'>
-        ₱{data.price}
-      </Text>
+
+      {
+        !product.isSale ?
+          <Text fontSize="26px" fontWeight="700">
+            ₱{Number(product.price).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </Text>
+          :
+          <Flex direction={{base: "column", lg: "row"}} alignItems={{base: "start", lg: "center"}} gap={{base: 0, lg: 2}}>
+<Text fontSize="26px"fontWeight="700">
+            ₱{Number(product.compare_at_price).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </Text>
+          <Text fontSize="14px" fontWeight="700" textDecoration="line-through" color="gray.500">
+            ₱{Number(product.price).toLocaleString("en-PH")}
+          </Text>
+          </Flex>
+      }
+
+
       <Dialog.Root open={isOpen} onOpenChange={(e) => setIsOpen(e.open)}>
         <Dialog.Trigger asChild>
-          <Button bgColor='#0030FF' mt={4} size={{ base: 'md', md: 'xl' }}>
-            Add to Cart <LuPlus />
+          <Button
+            mt="auto"
+            bgColor="#0030FF"
+            size={{ base: "md", md: "xl" }}
+            disabled={inventory?.available === 0}
+          >
+            {inventory?.available === 0 ? "Out of Stock" : "Add to Cart"}{" "}
+            {inventory?.available > 0 && <LuPlus />}
           </Button>
         </Dialog.Trigger>
+
         <Portal>
           <Dialog.Backdrop />
           <Dialog.Positioner>
             <Dialog.Content>
               <Dialog.Header>
-                <Dialog.Title>{data.title}</Dialog.Title>
+                <Dialog.Title>{product.title}</Dialog.Title>
               </Dialog.Header>
+
               <Dialog.Body>
                 <Stack>
                   <Image
                     mb={{ base: 0, md: 6 }}
-                    alt={data.title}
-                    src={data.images[0]}
-                    width='100%'
-                    height={{ base: '150px', md: '300px' }}
-                    objectFit='contain'
+                    alt={product.title}
+                    src={product.images?.[0]}
+                    width="100%"
+                    height={{ base: "150px", md: "300px" }}
+                    objectFit="contain"
                   />
-
-
-                  <NumberInput.Root min="0" max="20" value={qty} onValueChange={(e) => SetQty(Number(e.value))}>
+                  <NumberInput.Root
+                    min={1}
+                    max={inventory?.available}
+                    value={qty}
+                    onValueChange={(e) => setQty(Number(e.value))}
+                  >
                     <NumberInput.Control />
                     <NumberInput.Input />
                   </NumberInput.Root>
+                  <Text>Available: {inventory?.available}</Text>
                 </Stack>
               </Dialog.Body>
+
               <Dialog.Footer>
                 <Dialog.CloseTrigger asChild>
                   <CloseButton />
                 </Dialog.CloseTrigger>
-                <Button rounded="full" bgColor='#0030FF' disabled={qty === 0} onClick={addToCart}>Add To Chart <LuShoppingCart /></Button>
+
+                <Button
+                  rounded="full"
+                  bgColor="#0030FF"
+                  disabled={qty === 0}
+                  onClick={addToCart}
+                >
+                  Add To Cart <LuShoppingCart />
+                </Button>
               </Dialog.Footer>
             </Dialog.Content>
           </Dialog.Positioner>
@@ -180,3 +238,18 @@ export default function ProductCard({ data, ...props }) {
     </Stack>
   );
 }
+
+// Simple badge component for clarity
+const Badge = ({ children, bg, color = "black" }) => (
+  <Box
+    fontSize="10px"
+    px="0.5rem"
+    py="0.25rem"
+    bg={bg}
+    color={color}
+    rounded="full"
+    fontWeight="bold"
+  >
+    <Text>{children}</Text>
+  </Box>
+);

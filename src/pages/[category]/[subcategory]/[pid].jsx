@@ -23,6 +23,7 @@ import CustomBreadcrumb from '@/components/custom/CustomBreadcrumb';
 import ProductViewer from '@/components/custom/ProductViewer';
 import formatTitle from '@/helper/slug';
 import { supabase } from '@/helper/supabase';
+import { useCart } from '@/context/CartContext';
 
 const settings = {
   dots: true,
@@ -34,6 +35,7 @@ const settings = {
 
 export default function ProductPage() {
   const router = useRouter();
+  const {addToCart} = useCart();
   const { category, subcategory, pid } = router.query;
   const [product, setProduct] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -67,50 +69,6 @@ export default function ProductPage() {
   const pageTitle = pid
     ? `${formatTitle(pid)} | SM Supermarket`
     : 'Category | SM Supermarket';
-
-  const addToCart = async () => {
-    const auth_id = localStorage.getItem("auth_id")
-    const res = await supabase.auth.getUser();
-    const user = res.data.user;
-
-    if (!auth_id) {
-      alert("Please sign in first.")
-      router.push('/signin');
-      return;
-    } else {
-      try {
-        // 1️⃣ Fetch current cart
-        const { data: userData, error: fetchError } = await supabase
-          .from('users')
-          .select('cart_item')
-          .eq('id', auth_id)
-          .single();
-
-        if (fetchError) throw fetchError;
-
-        const currentCart = userData?.cart_item || [];
-        const existingIndex = currentCart.findIndex(item => item.pid === pid);
-
-        if (existingIndex !== -1) {
-          currentCart[existingIndex].quantity += quantity;
-          alert(`Product quantity updated to ${currentCart[existingIndex].quantity}`);
-        } else {
-          currentCart.push({ pid: pid, quantity: quantity });
-          alert('Item added to cart!');
-        }
-
-        const { error: updateError } = await supabase
-          .from('users')
-          .update({ cart_item: currentCart })
-          .eq('id', auth_id);
-
-        if (updateError) throw updateError;
-      } catch (err) {
-        console.error(err);
-        alert('Failed to update cart.');
-      }
-    }
-  }
 
   return (
     <>
@@ -176,10 +134,10 @@ export default function ProductPage() {
                   <Text mt={4} w={{ base: "full", lg: "70%" }}>{product?.description}</Text>
                   <Separator mt="auto" mb={2} />
                   <Flex gap={4} flexWrap="wrap">
-                    <Button onClick={addToCart} bg='#0030FF' size='xl' rounded="full">
+                    <Button onClick={() => addToCart(product, quantity)} bg='#0030FF' size='xl' rounded="full">
                       <LuShoppingCart />Add To Cart
                     </Button>
-                    <Button rounded="full" variant='outline' size='xl'><LuHeart />Add To Wishlist </Button>
+                    {/* <Button rounded="full" variant='outline' size='xl'><LuHeart />Add To Wishlist </Button> */}
                   </Flex>
                 </Stack>
               </SimpleGrid>

@@ -258,8 +258,8 @@ export default function Profile() {
                       </Table.Root>
                     </Table.ScrollArea>
                   ) : (
-                    <Stack alignItems='center' gap={4}>
-                      <Text>No Orders</Text>
+                    <Stack alignItems='center' gap={4} p={4}>
+                      <Heading>No Orders</Heading>
                       <Box>
                         <Button rounded='full' bg='blue.600' onClick={() => router.replace("/")}>
                           Continue Shopping

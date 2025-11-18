@@ -192,6 +192,30 @@ export default function AddProduct() {
                   </NumberInput.Root>
                 </Field.Root>
                 <Field.Root>
+                <Field.Label>Is On Sale?</Field.Label>
+                <Checkbox.Root
+                  value={form.isSale}
+                  onCheckedChange={(e) => setForm({ ...form, isSale: !!e.checked })}
+                >
+                  <Checkbox.HiddenInput />
+                  <Checkbox.Control />
+                </Checkbox.Root>
+              </Field.Root>
+              {form.isSale &&
+                <Field.Root>
+                  <Field.Label>Sale Price</Field.Label>
+                  <NumberInput.Root
+                    value={form.compare_at_price}
+                    onValueChange={(e) => setForm({ ...form, compare_at_price: e.value })}
+                    defaultValue="10"
+                    min={5}
+                  >
+                    <NumberInput.Control />
+                    <NumberInput.Input />
+                  </NumberInput.Root>
+                </Field.Root>
+              }
+                {/* <Field.Root>
                   <Field.Label>Compare At Price</Field.Label>
                   <NumberInput.Root
                     value={form.compare_at_price}
@@ -201,7 +225,7 @@ export default function AddProduct() {
                     <NumberInput.Control />
                     <NumberInput.Input />
                   </NumberInput.Root>
-                </Field.Root>
+                </Field.Root> */}
               </SimpleGrid>
               <Field.Root>
                 <Field.Label>Category</Field.Label>
@@ -231,30 +255,7 @@ export default function AddProduct() {
                   </NativeSelect.Field>
                 </NativeSelect.Root>
               </Field.Root>
-              <Field.Root>
-                <Field.Label>Is On Sale?</Field.Label>
-                <Checkbox.Root
-                  value={form.isSale}
-                  onCheckedChange={(e) => setForm({ ...form, isSale: !!e.checked })}
-                >
-                  <Checkbox.HiddenInput />
-                  <Checkbox.Control />
-                </Checkbox.Root>
-              </Field.Root>
-              {form.isSale &&
-                <Field.Root>
-                  <Field.Label>Sale Price</Field.Label>
-                  <NumberInput.Root
-                    value={form.sale_price}
-                    onValueChange={(e) => setForm({ ...form, sale_price: e.value })}
-                    defaultValue="10"
-                    min={5}
-                  >
-                    <NumberInput.Control />
-                    <NumberInput.Input />
-                  </NumberInput.Root>
-                </Field.Root>
-              }
+              
               <Field.Root>
                 <Field.Label>Description</Field.Label>
                 <Textarea row={10} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />

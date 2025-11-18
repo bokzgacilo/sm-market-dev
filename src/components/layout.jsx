@@ -20,10 +20,16 @@ import FooterNavigation from './custom/footer-navigation';
 import SearchInput from './custom/SearchInput';
 import SideNavigation from './custom/side-navigation';
 
-export default function Layout({ auth, children }) {
+export default function Layout({ children }) {
   const [isOpen, setIsOpen] = useState(false);
   const isMobile = useBreakpointValue({ base: true, md: false });
   const router = useRouter();
+  const [auth, setAuthId] = useState(null);
+  
+  useEffect(() => {
+    const savedAuth = localStorage.getItem("auth_id");
+    setAuthId(savedAuth);
+  }, []);
 
   return (
     <Stack height='100dvh' gap={0}>

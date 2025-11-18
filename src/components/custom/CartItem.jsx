@@ -114,7 +114,7 @@ export default function CartItem({ data, refresh, compute_total = null }) {
       {/* CARD */}
       <Flex
         direction="row"
-        gap={4}
+        gap={0}
         alignItems="center"
       >
         <Image
@@ -127,6 +127,7 @@ export default function CartItem({ data, refresh, compute_total = null }) {
         />
         <Stack
           gap={0}
+          ml={2}
         >
           <Flex alignItems="center" gap={2}>
             <Heading>
@@ -167,9 +168,10 @@ export default function CartItem({ data, refresh, compute_total = null }) {
 
         </Stack>
         <Stack
-          ml="auto"
           alignItems="flex-end"
           gap={0}
+          flex={1}
+          
         >
           <Heading>
             ₱ {(

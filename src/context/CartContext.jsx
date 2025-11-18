@@ -7,10 +7,10 @@ const CartContext = createContext();
 
 export function CartProvider({ children }) {
   const [cartItems, setCartItems] = useState([]);
-  const [authId, setAuthId] = useState(null);
   const [counter, setCounter] = useState(0)
   const [store_code, setStoreCode] = useState(null);
   const [TOTAL, setTOTAL] = useState(0)
+  const [authId, setAuthId] = useState(null);
 
   useEffect(() => {
     // Load auth + branch from localStorage

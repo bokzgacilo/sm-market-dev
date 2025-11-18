@@ -73,8 +73,6 @@ export default function Profile() {
     fetchUserData()
   }, [auth]);
 
-  
-
   if (isCheckingAuth) {
     return (
       <Center>
@@ -143,7 +141,7 @@ export default function Profile() {
                 <Stack gap={0}>
                   <Stack bg='gray.100' align='center' gap={0} py={4}>
                     <Avatar.Root boxSize='150px'>
-                      <Avatar.Image />
+                      <Avatar.Image src="/default.jpg"/>
                     </Avatar.Root>
                     <Heading fontSize='32px' mt={4}>
                       {userData.first_name} {userData.last_name}
@@ -157,20 +155,20 @@ export default function Profile() {
                   </Stack>
                   <Separator />
                   <Stack p={4}>
-                    <Stack>
+                    {/* <Stack>
                       <Text fontWeight='bold'>Gender:</Text>
                       <Text>{userData.gender.toUpperCase()}</Text>
                     </Stack>
                     <Stack>
                       <Text fontWeight='bold'>Date Of Birth:</Text>
                       <Text>{userData.dob}</Text>
-                    </Stack>
-                    <Separator my={4} />
+                    </Stack> */}
                     <Stack gap={4}>
                       <Field.Root>
                         <Field.Label>Street/Building/Unit/Room</Field.Label>
                         <Input
                           readOnly
+                          size="sm"
                           value={userData?.shipping_address?.address_line || ''}
                         />
                       </Field.Root>
@@ -179,6 +177,7 @@ export default function Profile() {
                         <Field.Label>Barangay</Field.Label>
                         <Input
                           readOnly
+                          size="sm"
                           value={userData?.shipping_address?.barangay || ''}
                         />
                       </Field.Root>
@@ -187,6 +186,7 @@ export default function Profile() {
                         <Field.Label>City</Field.Label>
                         <Input
                           readOnly
+                          size="sm"
                           value={userData?.shipping_address?.city || ''}
                         />
                       </Field.Root>
@@ -195,6 +195,7 @@ export default function Profile() {
                         <Field.Label>Province</Field.Label>
                         <Input
                           readOnly
+                          size="sm"
                           value={userData?.shipping_address?.province || ''}
                         />
                       </Field.Root>
@@ -216,58 +217,59 @@ export default function Profile() {
                 <EditAddress useremail={userData.email} />
               </Card.Footer>
             </Card.Root>
-            <Card.Root>
-              <Card.Header p={4}>
-                <Card.Title>Orders</Card.Title>
-              </Card.Header>
-              <Separator />
-              <Card.Body p={0}>
-                {orders.length > 0 ? (
-                  <Table.ScrollArea>
-                    <Table.Root size='sm' stickyHeader>
-                      <Table.Header>
-                        <Table.Row>
-                          <Table.ColumnHeader>Ref #</Table.ColumnHeader>
-                          <Table.ColumnHeader>Amount</Table.ColumnHeader>
-                          <Table.ColumnHeader>Status</Table.ColumnHeader>
-                        </Table.Row>
-                      </Table.Header>
-                      <Table.Body>
-                        {orders.map((order) => (
-                          <Table.Row key={order.id}>
-                            <Table.Cell
-                              onClick={() => {
-                                setOpen(true)
-                                setMenu('full-details')
-                                setCart(order.cart_items)
-                                setOrder(order)
-                              }}
-                            >{order.reference_number}</Table.Cell>
-                            <Table.Cell>{order.total_amount / 100}</Table.Cell>
-                            <Table.Cell>
-                              <Tag.Root>
-                                <Tag.Label>
-                                  {order.status.toUpperCase()}
-                                </Tag.Label>
-                              </Tag.Root>
-                            </Table.Cell>
+            <Box>
+              <Card.Root>
+                <Card.Header p={4}>
+                  <Card.Title>Orders</Card.Title>
+                </Card.Header>
+                <Separator />
+                <Card.Body p={0}>
+                  {orders.length > 0 ? (
+                    <Table.ScrollArea>
+                      <Table.Root size='sm' stickyHeader>
+                        <Table.Header>
+                          <Table.Row>
+                            <Table.ColumnHeader>Ref #</Table.ColumnHeader>
+                            <Table.ColumnHeader>Amount</Table.ColumnHeader>
+                            <Table.ColumnHeader>Status</Table.ColumnHeader>
                           </Table.Row>
-                        ))}
-                      </Table.Body>
-                    </Table.Root>
-                  </Table.ScrollArea>
-                ) : (
-                  <Stack alignItems='center' gap={4}>
-                    <Text>No Orders</Text>
-                    <Box>
-                      <Button rounded='full' bg='blue.600' onClick={() => router.replace("/")}>
-                        Continue Shopping
-                      </Button>
-                    </Box>
-                  </Stack>
-                )}
-              </Card.Body>
-            </Card.Root>
+                        </Table.Header>
+                        <Table.Body>
+                          {orders.map((order) => (
+                            <Table.Row key={order.id}>
+                              <Table.Cell
+                                onClick={() => {
+                                  setOpen(true)
+                                  setCart(order.cart_items)
+                                  setOrder(order)
+                                }}
+                              >{order.reference_number}</Table.Cell>
+                              <Table.Cell>{order.total_amount / 100}</Table.Cell>
+                              <Table.Cell>
+                                <Tag.Root>
+                                  <Tag.Label>
+                                    {order.status.toUpperCase()}
+                                  </Tag.Label>
+                                </Tag.Root>
+                              </Table.Cell>
+                            </Table.Row>
+                          ))}
+                        </Table.Body>
+                      </Table.Root>
+                    </Table.ScrollArea>
+                  ) : (
+                    <Stack alignItems='center' gap={4}>
+                      <Text>No Orders</Text>
+                      <Box>
+                        <Button rounded='full' bg='blue.600' onClick={() => router.replace("/")}>
+                          Continue Shopping
+                        </Button>
+                      </Box>
+                    </Stack>
+                  )}
+                </Card.Body>
+              </Card.Root>
+            </Box>
           </SimpleGrid>
         }
       </Stack>

@@ -3,7 +3,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { supabase } from "@/helper/supabase";
 
-export default function EditAddress({useremail}) {
+export default function EditAddress({ useremail }) {
   const [address, setAddress] = useState({
     address_line: '',
     barangay: '',
@@ -53,23 +53,26 @@ export default function EditAddress({useremail}) {
   }, [selectedCity])
 
   const handleSaveAddress = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const {error} = await supabase
+      const { data, error } = await supabase
         .from('users')
-        .update({
-          shipping_address: address
-        })
+        .update({ shipping_address: address })
         .eq('email', useremail)
         .select();
 
-        if (error) throw error;
-    }catch(err){
-      console.error(err)
-    }finally{
-      setLoading(false)
+      if (error) throw error;
+
+      // success alert
+      alert('Address saved successfully!');
+    } catch (err) {
+      console.error(err);
+      alert('Something went wrong while saving the address.');
+    } finally {
+      setLoading(false);
     }
-  }
+  };
+
 
   return (
     <Dialog.Root>

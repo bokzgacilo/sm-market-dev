@@ -6,165 +6,13 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/helper/supabase";
 import CartItem from "./CartItem";
 import { useRouter } from "next/router";
+import { useCart } from "@/context/CartContext";
 
-export default function CartDrawer({auth, isMobile }) {
-  const [open, setOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
+export default function CartDrawer({isMobile}) {
   const router = useRouter();
-  const [cartItems, setCartItems] = useState([])
-
-  useEffect(() => {
-    const fetchCartItems = async () => {
-      const {data} = await supabase
-        .from('users')
-        .select('cart_item')
-        .eq('id', auth)
-        .single();
-
-      setCartItems(data.cart_item)
-    }
-    if(auth){
-      fetchCartItems();  
-    }
-  }, [open]);
-
-  const handleRemove = async (pidToRemove) => {
-    const auth_id = localStorage.getItem("auth_id")
-    if (!auth_id) return;
-
-    const { data: userData } = await supabase
-      .from('users')
-      .select('cart_item')
-      .eq('id', auth_id)
-      .single();
-
-    const updatedCart = (userData?.cart_item || []).filter(item => item.pid !== pidToRemove);
-
-    await supabase
-      .from('users')
-      .update({ cart_item: updatedCart })
-      .eq('id', auth_id);
-  };
-
-  const handleCheckout = async () => {
-    const auth_id = localStorage.getItem("auth_id")
-    const {data: userData} = await supabase
-      .from('users')
-      .select('shipping_address')
-      .eq('id', auth_id)
-      .single()
-    if (method === "delivery" && !userData.shipping_address) {
-      alert("Please set your shipping address in your profile.");
-      window.location.href = "/profile";
-      return;
-    } else {
-      setLoading(true)
-      const secretKey = 'sk_test_Y5BxqyZzNUjNgMLebHFh1Jhy';
-      try {
-
-        const slugs = cartItems.map(item => item.pid);
-        const { data: products, error: productError } = await supabase
-          .from('products')
-          .select('slug,title,price') // price in PHP
-          .in('slug', slugs);
-        if (productError) throw productError;
-
-        const line_items = cartItems.map(cartItem => {
-          const product = products.find(p => p.slug === cartItem.pid);
-
-
-          if (!product) return null;
-          return {
-            name: product.title,
-            amount: product.price * 100,
-            currency: 'PHP',
-            quantity: cartItem.quantity,
-          };
-        }).filter(Boolean);
-
-        const total_amount = line_items.reduce(
-          (sum, item) => sum + item.amount * item.quantity,
-          0
-        );
-        const authHeader = `Basic ${btoa(secretKey)}:`;
-        const ref = `${Date.now()}`;
-        const response = await axios.post(
-          'https://api.paymongo.com/v1/checkout_sessions',
-          {
-            data: {
-              attributes: {
-                reference_number: ref,
-                send_email_receipt: true,
-                description: 'SM Market Mapua Payment',
-                payment_method_types: ['card', 'gcash', 'qrph', 'paymaya'],
-                line_items,
-                success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/api/payment-success?ref=${ref}`,
-                failed_url: 'https://yourwebsite.com/failed',
-              },
-            },
-          },
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: authHeader, // Basic auth
-            },
-          }
-        );
-
-        if (response.data) {
-          const cid = response.data.data.id;
-
-          let ship_to;
-
-          if (method === "pickup") {
-            ship_to = JSON.parse(localStorage.getItem("branch_location"));
-          } else {
-            ship_to = userData.shipping_address;
-          }
-
-          const order_json = {
-            checkout_id: cid,
-            reference_number: ref,
-            customer_id: auth_id,
-            cart_items: cartItems,
-            total_amount: total_amount,
-            status: "pending",
-            shipping_method: method,
-            shipping_address: ship_to
-          };
-
-          const { error: insertError } = await supabase
-            .from("orders")
-            .insert([order_json])
-            .select(); // optional, returns inserted record
-
-          if (insertError) {
-            console.error("Error inserting order:", insertError.message);
-          } else {
-            // ✅ Clear user's cart after order creation
-            const { error: updateError } = await supabase
-              .from("users")
-              .update({ cart_item: [] })
-              .eq("id", auth_id);
-
-            if (updateError) {
-              console.error("Error clearing cart:", updateError.message);
-            }
-
-            // ✅ Redirect to PayMongo checkout
-            const checkoutUrl = response.data.data.attributes.checkout_url;
-            window.location.href = checkoutUrl;
-          }
-        }
-      } catch (err) {
-        console.error('Failed to create checkout session:', err.response?.data || err);
-      } finally {
-        setLoading(false)
-      }
-    }
-
-  }
-
+  const [open, setOpen] = useState(false)
+  const { cartItems } = useCart();
+  
   return (
     <Drawer.Root
       size='md'
@@ -207,7 +55,11 @@ export default function CartDrawer({auth, isMobile }) {
               <Stack p={4} gap={4}>
                 {cartItems.length > 0 ? (
                   cartItems.map((item) => (
-                    <CartItem key={item.pid} data={item} onRemove={() => handleRemove(item.pid)} />
+                    <CartItem 
+                      key={item.pid} 
+                      data={item} 
+                      refresh={item.pid}
+                    />
                   ))
                 ) : (
                   <Text fontSize="lg">No items in cart.</Text>
@@ -216,7 +68,7 @@ export default function CartDrawer({auth, isMobile }) {
             </Drawer.Body>
             <Drawer.Footer justifyContent="flex-start" p={4} hidden={cartItems.length === 0}>
               <Drawer.ActionTrigger asChild>
-                <Button w="full" colorPalette='blue' rounded="full" size="xl" loading={loading} onClick={() => router.push('/cart')}>
+                <Button w="full" colorPalette='blue' rounded="full" size="xl" onClick={() => router.push('/cart')}>
                   Review Cart
                   <LuShoppingCart />
                 </Button>

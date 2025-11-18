@@ -2,7 +2,7 @@ import { Box, Card, Flex, GridItem, Image, Heading, Spinner, Stack, Text } from 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/helper/supabase';
 
-export default function OrderItem({ data, onRemove }) {
+export default function OrderItem({ data }) {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -12,7 +12,7 @@ export default function OrderItem({ data, onRemove }) {
       const { data: product } = await supabase
         .from('products')
         .select('*')
-        .eq('slug', data.pid)
+        .eq('id', data.pid)
         .limit(1)
         .single();
 

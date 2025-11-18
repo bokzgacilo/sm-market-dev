@@ -14,21 +14,19 @@ import {
   SkeletonText,
 } from "@chakra-ui/react";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
 import { LuPlus, LuShoppingCart } from "react-icons/lu";
+import { useCart } from "@/context/CartContext";
 import { supabase } from "@/helper/supabase";
 
 export default function ProductCard({ pid, ...props }) {
-  const router = useRouter();
-
+  const { addToCart } = useCart();
   const [qty, setQty] = useState(1);
   const [product, setProduct] = useState(null);
   const [inventory, setInventory] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Fetch product and inventory
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -57,51 +55,6 @@ export default function ProductCard({ pid, ...props }) {
 
     fetchData();
   }, [pid]);
-
-  const addToCart = async () => {
-    try {
-      if (!localStorage.getItem("auth_id")) {
-        alert("Please sign in first.");
-        router.push("/signin");
-        return;
-      }
-
-      const { data: userData, error: fetchError } = await supabase
-        .from("users")
-        .select("cart_item")
-        .eq("id", localStorage.getItem("auth_id"))
-        .single();
-
-      if (fetchError) throw fetchError;
-
-      const currentCart = userData?.cart_item || [];
-      const existingItemIndex = currentCart.findIndex(
-        (item) => item.pid === product.slug
-      );
-
-      if (existingItemIndex !== -1) {
-        currentCart[existingItemIndex].quantity += qty;
-        alert(
-          `Product quantity updated to ${currentCart[existingItemIndex].quantity}`
-        );
-      } else {
-        currentCart.push({ pid: product.slug, quantity: qty });
-        alert("Item added to cart!");
-      }
-
-      const { error: updateError } = await supabase
-        .from("users")
-        .update({ cart_item: currentCart })
-        .eq("id", localStorage.getItem("auth_id"));
-
-      if (updateError) throw updateError;
-
-      setIsOpen(false);
-    } catch (err) {
-      console.error(err);
-      alert("Failed to update cart.");
-    }
-  };
 
   if (loading || !product) {
     return (
@@ -162,13 +115,13 @@ export default function ProductCard({ pid, ...props }) {
             ₱{Number(product.price).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </Text>
           :
-          <Flex direction={{base: "column", lg: "row"}} alignItems={{base: "start", lg: "center"}} gap={{base: 0, lg: 2}}>
-<Text fontSize="26px"fontWeight="700">
-            ₱{Number(product.compare_at_price).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </Text>
-          <Text fontSize="14px" fontWeight="700" textDecoration="line-through" color="gray.500">
-            ₱{Number(product.price).toLocaleString("en-PH")}
-          </Text>
+          <Flex direction={{ base: "column", lg: "row" }} alignItems={{ base: "start", lg: "center" }} gap={{ base: 0, lg: 2 }}>
+            <Text fontSize="26px" fontWeight="700">
+              ₱{Number(product.compare_at_price).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </Text>
+            <Text fontSize="14px" fontWeight="700" textDecoration="line-through" color="gray.500">
+              ₱{Number(product.price).toLocaleString("en-PH")}
+            </Text>
           </Flex>
       }
 
@@ -226,7 +179,10 @@ export default function ProductCard({ pid, ...props }) {
                   rounded="full"
                   bgColor="#0030FF"
                   disabled={qty === 0}
-                  onClick={addToCart}
+                  onClick={async () => {
+                    await addToCart(product, qty)
+                    setIsOpen(false)
+                  }}
                 >
                   Add To Cart <LuShoppingCart />
                 </Button>

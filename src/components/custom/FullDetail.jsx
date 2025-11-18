@@ -31,6 +31,8 @@ export default function FullDetail({ order: orderData, cart }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    console.log(orderData)
+
     const fetchOrder = async () => {
       const { data, error } = await supabase
         .from("orders")
@@ -51,7 +53,7 @@ export default function FullDetail({ order: orderData, cart }) {
 
       if (error) console.error(error);
       console.log(data)
-      setDelivery(data[0]);
+      setDelivery(data);
     };
 
     // Initial fetch
@@ -194,7 +196,6 @@ export default function FullDetail({ order: orderData, cart }) {
                 <OrderItem
                   key={item.pid}
                   data={item}
-                  onRemove={null}
                 />
               ))}
             </Stack>

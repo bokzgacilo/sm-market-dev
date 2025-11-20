@@ -55,18 +55,20 @@ export default function Cart() {
         const slugs = cartItems.map(item => item.pid);
         const { data: products, error: productError } = await supabase
           .from('products')
-          .select('id, slug,title,price') // price in PHP
+          .select('id, slug,title,price, isSale, compare_at_price') // price in PHP
           .in('id', slugs);
         if (productError) throw productError;
 
         const line_items = cartItems.map(cartItem => {
           const product = products.find(p => p.id === cartItem.pid);
-
-
           if (!product) return null;
+          const AMOUNT = product.isSale
+            ? product.compare_at_price * 100
+            : product.price * 100;
+
           return {
             name: product.title,
-            amount: product.price * 100,
+            amount: AMOUNT,
             currency: 'PHP',
             quantity: cartItem.quantity,
           };
@@ -209,7 +211,7 @@ export default function Cart() {
             <Card.Body>
               <Stack gap={4}>
                 <HStack justifyContent='space-between'>
-                  <Text>Subtotal</Text>
+                  {/* <Text>Subtotal</Text> */}
                   <Text>₱ {subtotal.toFixed(2)}</Text>
                 </HStack>
                 <Separator />

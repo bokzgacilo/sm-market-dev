@@ -11,18 +11,18 @@ import Link from 'next/link';
 import { GoChevronRight } from 'react-icons/go';
 
 const categories = [
-  {
-    label: "Fresh Produce",
-    path: "fresh-produce",
-  },
-  {
-    label: "Frozen Goods",
-    path: "frozen-goods",
-  },
-  {
-    label: "Beverage",
-    path: "beverage",
-  },
+  // {
+  //   label: "Fresh Produce",
+  //   path: "fresh-produce",
+  // },
+  // {
+  //   label: "Frozen Goods",
+  //   path: "frozen-goods",
+  // },
+  // {
+  //   label: "Beverage",
+  //   path: "beverage",
+  // },
   {
     label: "Home and Essentials",
     path: "home-and-essentials",

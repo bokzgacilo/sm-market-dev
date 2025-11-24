@@ -165,6 +165,21 @@ export default function FullDetail({ order: orderData, cart }) {
                   </Steps.Root>
                 </>
             }
+            
+            {(delivery.status === "out_for_delivery" || delivery.status === "completed") && order.shipping_method === "delivery" &&
+              <Stack
+                gap={4}
+              >
+                <Field.Root>
+                  <Field.Label>Courier</Field.Label>
+                  <Text>{delivery.shipping_partner.toUpperCase()}</Text>
+                </Field.Root>
+                <Field.Root>
+                  <Field.Label>Tracking Number</Field.Label>
+                  <Text>{delivery.tracking_number.toUpperCase()}</Text>
+                </Field.Root>
+              </Stack>
+            }
           </Stack>
           <Stack
             gap={4}

@@ -1,5 +1,16 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
+export default async function handler(req, res) {
+  if (req.method === "GET") {
+    return res.status(200).json({ message: "GET request received" });
+  }
 
-export default function handler(_req, res) {
-  res.status(200).json({ name: 'John Doe' });
+  if (req.method === "POST") {
+    const body = req.body; // JSON body from client
+
+    return res.status(201).json({
+      message: "POST request received",
+      data: body,
+    });
+  }
+
+  return res.status(405).json({ error: "Method Not Allowed" });
 }

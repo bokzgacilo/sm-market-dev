@@ -1,6 +1,7 @@
 import ProductCard from "@/components/custom/ProductCard";
 import { supabase } from "@/helper/supabase";
 import { Box, Image, SimpleGrid, Stack } from "@chakra-ui/react";
+import Head from "next/head";
 import { useEffect, useState } from "react";
 import Slider from "react-slick";
 
@@ -27,6 +28,10 @@ export default function Home() {
   }, [])
 
   return (
+    <>
+    <Head>
+      <title>Home | SM Supermarket</title>
+    </Head>
     <Stack alignItems="center" >
       <Box w={{base: "100%", lg: "100%"}}>
         <Slider {...settings}>
@@ -49,5 +54,7 @@ export default function Home() {
         </SimpleGrid>
       </Stack>
     </Stack>
+    </>
+    
   )
 }

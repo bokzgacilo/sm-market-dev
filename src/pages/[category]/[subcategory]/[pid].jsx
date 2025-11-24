@@ -35,7 +35,7 @@ const settings = {
 
 export default function ProductPage() {
   const router = useRouter();
-  const {addToCart} = useCart();
+  const { addToCart } = useCart();
   const { category, subcategory, pid } = router.query;
   const [product, setProduct] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -77,7 +77,7 @@ export default function ProductPage() {
       </Head>
 
       <Stack p={{ base: 0, lg: 4 }} gap={{ base: 0, lg: 4 }}>
-        <Box p={{ base: 4, lg: 0 }} bg={{base: "gray.200", lg: "none"}}>
+        <Box p={{ base: 4, lg: 0 }} bg={{ base: "gray.200", lg: "none" }}>
           <CustomBreadcrumb
             data={{
               root: 'home',
@@ -89,7 +89,7 @@ export default function ProductPage() {
 
         </Box>
 
-        <Card.Root rounded={{base: 0, lg: "md"}}>
+        <Card.Root rounded={{ base: 0, lg: "md" }}>
           <Card.Body p={{ base: 0, lg: 4 }}>
             {isLoading ? (
               <Center>
@@ -122,7 +122,7 @@ export default function ProductPage() {
                 <Stack p={4}>
                   <Heading size='2xl'>{pageTitle}</Heading>
                   <Heading size={{ base: "3xl", lg: "5xl" }} my={4}>
-                    PHP {product?.price}
+                    PHP {product?.isSale ? product?.compare_at_price : product?.price}
                   </Heading>
                   <Field.Root>
                     <Field.Label>Quantity</Field.Label>

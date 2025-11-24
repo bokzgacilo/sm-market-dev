@@ -109,8 +109,15 @@ export default function Signin() {
                 >
                   Sign In
                 </Button>
-                <Separator />
-                <Button variant="outline">Google</Button>
+                {/* <Separator />
+                <Button variant="outline" onClick={async () => {
+                  await supabase.auth.signInWithOAuth({
+                    provider: "google",
+                    options: {
+                      redirectTo: "http://localhost:3000/api/auth",
+                    },
+                  });
+                }}>Google</Button> */}
                 <Text fontSize='sm' color='gray.600' textAlign='center'>
                   Don’t have an account?{' '}
                   <Link href='/signup' passHref>

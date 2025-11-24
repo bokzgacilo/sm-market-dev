@@ -50,9 +50,18 @@ export default function OrderItem({ data }) {
           gap={0}
         >
           <Text>{product.title}</Text>
-          <Text>Quantity: {data.quantity} @ PHP{product.price}</Text>
+          <Text>
+            Quantity: {data.quantity} @ PHP
+            {product.isSale ? product.compare_at_price : product.price}
+          </Text>
+
         </Stack>
-        <Heading size="sm" ml="auto">PHP {(product.price * data.quantity).toLocaleString()}</Heading>
+        <Heading size="sm" ml="auto">
+          PHP {(
+            (product.isSale ? product.compare_at_price : product.price)
+            * data.quantity
+          ).toLocaleString()}
+        </Heading>
       </Flex>
     </Stack>
   );

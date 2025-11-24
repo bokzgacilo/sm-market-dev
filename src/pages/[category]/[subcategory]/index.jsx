@@ -36,6 +36,8 @@ export default function CategoryPage() {
           type: type,
           sortBy: sortBy,
         });
+        
+        console.log(products)
         setAllProducts(products);
       } catch (err) {
         console.error(err);
@@ -91,7 +93,7 @@ export default function CategoryPage() {
                   :
                   <SimpleGrid mt={4} columns={{ base: 2, md: 4}} gap={{ base: 2, lg: 4 }}>
                     {allProducts.map((item) => (
-                      <ProductCard data={item} key={item.id} />
+                      <ProductCard pid={item.id} key={item.id} />
                     ))}
                   </SimpleGrid>
               )}

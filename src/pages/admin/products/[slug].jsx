@@ -18,15 +18,17 @@ import {
   Textarea,
 } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
-import { LuBoxes, LuEye } from 'react-icons/lu';
+import { LuBoxes, LuEye, LuPen } from 'react-icons/lu';
 import ManageInventory from '@/components/custom/ManageInventory';
 import { supabase } from '@/helper/supabase';
+import { useRouter } from 'next/router';
 
 export default function ProductDetails({ slug, close }) {
   const [product, setProduct] = useState(null);
   const [inventory, setInventory] = useState(null);
   const [showInventoryDialog, setShowInventoryDialog] = useState(false);
   const [newInventory, setNewInventory] = useState({});
+  const router = useRouter();
 
   // Fetch product
   useEffect(() => {
@@ -154,6 +156,14 @@ export default function ProductDetails({ slug, close }) {
         >
           <LuBoxes />
           Inventory
+        </Button>
+        <Button
+          size='sm'
+          variant='outline'
+          onClick={() => router.push(`/admin/products/edit/${product.id}`)}
+        >
+          <LuPen />
+          Edit
         </Button>
       </Flex>
 

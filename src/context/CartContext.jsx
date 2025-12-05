@@ -10,6 +10,8 @@ export function CartProvider({ children }) {
   const [counter, setCounter] = useState(0)
   const [store_code, setStoreCode] = useState(null);
   const [TOTAL, setTOTAL] = useState(0)
+  const [SUBTOTAL, setSUBTOTAL] = useState(0)
+  const [DISCOUNT, setDISCOUNT] = useState(0)
   const [authId, setAuthId] = useState(null);
 
   useEffect(() => {
@@ -33,6 +35,8 @@ export function CartProvider({ children }) {
     if (!authId) {
       setCartItems([]);
       setTOTAL(0);
+      setSUBTOTAL(0)
+      setDISCOUNT(0)
       return;
     }
 
@@ -48,11 +52,15 @@ export function CartProvider({ children }) {
       if (cart.length === 0) {
         setCartItems([]);
         setTOTAL(0);
+        setSUBTOTAL(0)
+        setDISCOUNT(0)
         return;
       }
 
       // TEMP variable to compute total
       let computedTotal = 0;
+      let subtotal = 0;
+      let discounted = 0;
 
       const updatedCart = await Promise.all(
         cart.map(async (item) => {
@@ -79,6 +87,12 @@ export function CartProvider({ children }) {
           // Add to local total
           computedTotal += quantity * priceToUse;
 
+          if (inventory.products.isSale) {
+            discounted += quantity * (inventory.products.price - inventory.products.compare_at_price);
+          }
+
+          subtotal += quantity * inventory.products.price;
+
           const storeInv = inventory[store_code];
           const available = storeInv?.available || 0;
 
@@ -90,6 +104,8 @@ export function CartProvider({ children }) {
       );
 
       // Set total ONCE after all calculations
+      setSUBTOTAL(subtotal);
+      setDISCOUNT(discounted);
       setTOTAL(computedTotal);
       setCartItems(updatedCart);
     } catch (error) {
@@ -190,6 +206,8 @@ export function CartProvider({ children }) {
       value={{
         cartItems,
         TOTAL,
+        SUBTOTAL,
+        DISCOUNT,
         setTOTAL,
         addToCart,
         removeFromCart,

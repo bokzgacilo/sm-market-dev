@@ -15,14 +15,7 @@ export default function SearchInput() {
 
   const handleSearch = (e) => {
     if (e.key === "Enter") {
-      router.push(
-        {
-          pathname: router.pathname,
-          query: { ...router.query, q: query || undefined },
-        },
-        undefined,
-        { shallow: true }
-      );
+      router.push(`/search/${query}`);
     }
   };
 

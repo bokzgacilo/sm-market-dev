@@ -12,6 +12,8 @@ export default function ProductIndex() {
   const [isloadingProducts, isSetLoadingProducts] = useState(true)
   const [totalCount, setTotalCount] = useState(0);
   const [selectedSlug, setSelectedSlug] = useState(null)
+  const [search, setSearch] = useState("")
+  const [counter, setCounter] = useState(0)
   const router = useRouter();
 
   const [page, setPage] = useState(1);
@@ -21,12 +23,19 @@ export default function ProductIndex() {
 
   useEffect(() => {
     const fetchAllProducts = async () => {
-      const { data, count } = await supabase
+      let query = supabase
         .from("products")
         .select("*", { count: "exact" })
         .order("slug", { ascending: true })
         .range(start, end);
 
+      if (search?.trim()) {
+        query = query.or(
+          `slug.ilike.%${search}%`
+        );
+      }
+
+      const { data, count } = await query;
       if (data) {
         setAllProducts(data);
         isSetLoadingProducts(false);
@@ -53,7 +62,7 @@ export default function ProductIndex() {
     return () => {
       supabase.removeChannel(subscription);
     };
-  }, [page]);
+  }, [page, counter]);
 
   return (
     <>
@@ -70,8 +79,8 @@ export default function ProductIndex() {
               </Button>
             </Link>
             <Flex gap={4} px={4}>
-              <Input placeholder="Search product" />
-              <Button bg="blue.600" >Search</Button>
+              <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search product" />
+              <Button bg="blue.600" onClick={() => setCounter(counter + 1)}>Search</Button>
             </Flex>
           </Flex>
 
@@ -138,7 +147,11 @@ export default function ProductIndex() {
                           </Table.Cell>
 
                         </Table.Row>
-                      )) : <></>
+                      )) : <Table.Row>
+                        <Table.Cell colSpan={5}>
+                          <Text>No products found</Text>
+                        </Table.Cell>
+                      </Table.Row>
                     }
                   </Table.Body>
                 </Table.Root>

@@ -32,7 +32,7 @@ const shipping_methods = [
 
 
 export default function Cart() {
-  const { cartItems, store_code, TOTAL } = useCart();
+  const { cartItems, store_code, TOTAL, DISCOUNT, SUBTOTAL } = useCart();
   const [loading, setLoading] = useState(false)
   const [method, setMethod] = useState("pickup")
 
@@ -180,10 +180,6 @@ export default function Cart() {
     }
   }
 
-  const subtotal = cartItems.reduce((sum, item) => {
-    return sum + (item.products?.price * item.quantity || 0);
-  }, 0);
-
   return (
     <Stack gap={6} p={4}>
       <Heading>My Cart</Heading>
@@ -211,8 +207,12 @@ export default function Cart() {
             <Card.Body>
               <Stack gap={4}>
                 <HStack justifyContent='space-between'>
-                  {/* <Text>Subtotal</Text> */}
-                  <Text>₱ {subtotal.toFixed(2)}</Text>
+                  <Text>Subtotal</Text>
+                  <Text>₱ {SUBTOTAL.toFixed(2)}</Text>
+                </HStack>
+                <HStack justifyContent='space-between'>
+                  <Text>Discount</Text>
+                  <Text>₱ {DISCOUNT.toFixed(2)}</Text>
                 </HStack>
                 <Separator />
                 <HStack justifyContent='space-between'>

@@ -28,7 +28,7 @@ import Filters from '@/components/custom/Filters';
 
 export default function CategoryPage() {
   const router = useRouter();
-  const { category, type = "all", sortBy = null, q = null} = router.query;
+  const { category, type = "all", sortBy = null } = router.query;
   const [subcategoriesArray, setSubcategoriesArray] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -56,8 +56,7 @@ export default function CategoryPage() {
         const products = await getAllProducts({
           category: category,
           type: type,
-          sortBy: sortBy,
-          q:q
+          sortBy: sortBy
         });
         setAllProducts(products);
       } catch (err) {
@@ -126,14 +125,14 @@ export default function CategoryPage() {
                   </Stack>
                 </Center>
               ) : (
-                allProducts.length === 0 ? 
-                <Text textAlign='center' color='gray.500' py={8}>No products to show</Text>
-                :
-                <SimpleGrid mt={4} columns={{ base: 2, md: 4 }} gap={{ base: 2, lg: 4 }}>
-                  {allProducts.map((item) => (
-                    <ProductCard pid={item.id} key={item.id} />
-                  ))}
-                </SimpleGrid>
+                allProducts.length === 0 ?
+                  <Text textAlign='center' color='gray.500' py={8}>No products to show</Text>
+                  :
+                  <SimpleGrid mt={4} columns={{ base: 2, md: 4 }} gap={{ base: 2, lg: 4 }}>
+                    {allProducts.map((item) => (
+                      <ProductCard pid={item.id} key={item.id} />
+                    ))}
+                  </SimpleGrid>
               )}
             </Stack>
           </Card.Body>

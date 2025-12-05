@@ -19,11 +19,12 @@ import { useEffect, useState } from 'react';
 import { FiFilter } from 'react-icons/fi';
 import CustomBreadcrumb from '@/components/custom/CustomBreadcrumb';
 import ProductCard from '@/components/custom/ProductCard';
-import { supabase } from '@/helper/supabase';
+import { getAllProducts, supabase } from '@/helper/supabase';
+import Filters from '@/components/custom/Filters';
 
 export default function SearchPage() {
   const router = useRouter();
-  const { slug } = router.query;
+  const { type = "all", sortBy = null, slug } = router.query;
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -33,23 +34,19 @@ export default function SearchPage() {
     const fetchSearchResults = async () => {
       setIsLoading(true);
 
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .ilike('title', `%${slug}%`);
+      const products = await getAllProducts({
+        q: slug,
+        type: type,
+        sortBy: sortBy,
+      });
 
-      if (error) {
-        console.error(error);
-        setResults([]);
-      } else {
-        setResults(data);
-      }
-
-      setTimeout(() => setIsLoading(false), 1000);
+      console.log(products)
+      setResults(products);
+      setIsLoading(false);
     };
 
     fetchSearchResults();
-  }, [slug]);
+  }, [router]);
 
   const pageTitle = slug
     ? `Search: ${slug} | SM Supermarket`
@@ -73,7 +70,8 @@ export default function SearchPage() {
         <Card.Root>
           <Card.Body p={0}>
             <Stack p={4}>
-              <HStack flexWrap='wrap'>
+              <Filters router={router} />
+              {/* <HStack flexWrap='wrap'>
                 <Flex direction='row' gap={4}>
                   <Button variant='solid' colorPalette='blue'>
                     All
@@ -95,7 +93,7 @@ export default function SearchPage() {
                     <NativeSelect.Indicator />
                   </NativeSelect.Root>
                 </Flex>
-              </HStack>
+              </HStack> */}
               {isLoading ? (
                 <Center>
                   <Stack gap={8} p={4} alignItems='center'>
@@ -106,7 +104,7 @@ export default function SearchPage() {
               ) : results.length > 0 ? (
                 <SimpleGrid mt={4} columns={{ base: 2, md: 5 }} gap={4}>
                   {results.map((item) => (
-                    <ProductCard data={item} key={item.id} />
+                    <ProductCard pid={item.id} key={item.id} />
                   ))}
                 </SimpleGrid>
               ) : (

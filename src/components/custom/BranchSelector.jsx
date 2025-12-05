@@ -71,9 +71,19 @@ export default function BranchSelector() {
       const parsed = JSON.parse(saved);
       const found = branches.find((b) => b.name === parsed.branch_name);
       if (found) setSelectedBranch(found);
+    } else {
+      localStorage.setItem('branch_location',
+        JSON.stringify(
+          {
+            branch_name: "SM Makati",
+            branch_address: "Metro Manila, Makati, PH",
+            branch_code: "makati"
+          }
+        )
+      );
     }
   }, []);
-  
+
   return (
     <Dialog.Root
       size='xl'
@@ -131,7 +141,7 @@ export default function BranchSelector() {
                         );
                       }}
                     >
-                      <Card.Body p={{base: 2, lg: 4}}>
+                      <Card.Body p={{ base: 2, lg: 4 }}>
                         <Heading size="md">{branch.name}</Heading>
                         <Text fontSize="sm" color="gray.600">
                           {branch.city}
@@ -141,7 +151,7 @@ export default function BranchSelector() {
                   ))}
                 </Stack>
 
-                <Box w={{ base: 'full', md: '60%' }} h={{base: "200px", lg: "400px"}}>
+                <Box w={{ base: 'full', md: '60%' }} h={{ base: "200px", lg: "400px" }}>
                   {typeof window !== 'undefined' && (
                     <MapContainer
                       key={selectedBranch.name}
@@ -178,7 +188,7 @@ export default function BranchSelector() {
                 Select Branch
               </Button>
             </Dialog.Footer>
-            
+
           </Dialog.Content>
         </Dialog.Positioner>
       </Portal>

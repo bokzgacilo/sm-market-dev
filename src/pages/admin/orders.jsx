@@ -45,6 +45,7 @@ export default function Orders() {
         <title>Orders | Admin | SM Market Mapua</title>
       </Head>
       <Dialog.Root
+        size={{ base: "xl", lg: "xl" }}
         open={open}
         onOpenChange={(e) => setOpen(e.open)}
       >
@@ -125,6 +126,7 @@ export default function Orders() {
                     <Table.Cell
                       cursor="pointer"
                       onClick={() => {
+                        console.log(order)
                         setOpen(true)
                         setCart(order.cart_items)
                         setOrder(order)

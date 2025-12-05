@@ -38,6 +38,7 @@ export default function ProductPage() {
   const { addToCart } = useCart();
   const { category, subcategory, pid } = router.query;
   const [product, setProduct] = useState(null);
+  const [inventory, setInventory] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
 
@@ -46,20 +47,40 @@ export default function ProductPage() {
 
     const getProduct = async () => {
       setIsLoading(true);
-      const { data, error } = await supabase
+      const { data: product } = await supabase
         .from('products')
-        .select('*')
+        .select('id')
         .eq('slug', pid)
-        .limit(1)
+        .single()
+
+      const { data: inventory } = await supabase
+        .from("inventory")
+        .select("*, products(*)")
+        .eq("product_id", product.id)
         .single();
 
-      if (error) {
-        console.error('Error fetching product:', error);
-        setIsLoading(false);
-        return;
-      }
+      const branch = JSON.parse(localStorage.getItem("branch_location"));
+      const branchInventory = branch
+        ? inventory[branch.branch_code]
+        : null;
 
-      setProduct(data);
+      setInventory(branchInventory || { available: 0, sold: 0 });
+
+      console.log(inventory)
+      // const { data, error } = await supabase
+      //   .from('products')
+      //   .select('*')
+      //   .eq('slug', pid)
+      //   .limit(1)
+      //   .single();
+
+      // if (error) {
+      //   console.error('Error fetching product:', error);
+      //   setIsLoading(false);
+      //   return;
+      // }
+
+      setProduct(inventory);
       setIsLoading(false);
     };
 
@@ -100,12 +121,12 @@ export default function ProductPage() {
               </Center>
             ) : (
               <SimpleGrid p={{ base: 0, lg: 4 }} columns={{ base: 1, lg: 2 }} gap={{ base: 2, lg: 8 }}>
-                {product['3d_model'] ? (
-                  <ProductViewer modelUrl={product['3d_model']} />
+                {product.products['3d_model'] ? (
+                  <ProductViewer modelUrl={product.products['3d_model']} />
                 ) : (
                   <Box py={4}>
                     <Slider {...settings}>
-                      {product.images.map((img, index) => (
+                      {product.products.images.map((img, index) => (
                         <Image
                           key={index.img}
                           src={img}
@@ -122,7 +143,7 @@ export default function ProductPage() {
                 <Stack p={4}>
                   <Heading size='2xl'>{pageTitle}</Heading>
                   <Heading size={{ base: "3xl", lg: "5xl" }} my={4}>
-                    PHP {product?.isSale ? product?.compare_at_price : product?.price}
+                    PHP {product.products.isSale ? product.products.compare_at_price : product.products.price}
                   </Heading>
                   <Field.Root>
                     <Field.Label>Quantity</Field.Label>
@@ -130,11 +151,12 @@ export default function ProductPage() {
                       <NumberInput.Control />
                       <NumberInput.Input />
                     </NumberInput.Root>
+                    <Text>Available: {inventory.available}</Text>
                   </Field.Root>
-                  <Text mt={4} w={{ base: "full", lg: "70%" }}>{product?.description}</Text>
+                  <Text mt={4} w={{ base: "full", lg: "70%" }}>{product.products.description}</Text>
                   <Separator mt="auto" mb={2} />
                   <Flex gap={4} flexWrap="wrap">
-                    <Button onClick={() => addToCart(product, quantity)} bg='#0030FF' size='xl' rounded="full">
+                    <Button onClick={() => addToCart(product.products, quantity)} bg='#0030FF' size='xl' rounded="full">
                       <LuShoppingCart />Add To Cart
                     </Button>
                     {/* <Button rounded="full" variant='outline' size='xl'><LuHeart />Add To Wishlist </Button> */}

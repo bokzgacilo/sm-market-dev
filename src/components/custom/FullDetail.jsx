@@ -32,6 +32,8 @@ export default function FullDetail({ order: orderData, cart }) {
 
   useEffect(() => {
     const fetchOrder = async () => {
+      console.log(orderData.reference_number)
+
       const { data, error } = await supabase
         .from("orders")
         .select("*")
@@ -50,8 +52,8 @@ export default function FullDetail({ order: orderData, cart }) {
         .eq("order_ref", orderData.reference_number);
 
       if (error) console.error(error);
-      console.log(data[0])
-      setDelivery(data[0]);
+      console.log(data)
+      setDelivery(data[0] ?? []);
     };
 
     // Initial fetch
@@ -165,7 +167,7 @@ export default function FullDetail({ order: orderData, cart }) {
                   </Steps.Root>
                 </>
             }
-            
+
             {(delivery.status === "out_for_delivery" || delivery.status === "completed") && order.shipping_method === "delivery" &&
               <Stack
                 gap={4}

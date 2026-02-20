@@ -24,7 +24,7 @@ import Link from 'next/link';
 
 export default function CategoryPage() {
   const router = useRouter();
-  const { category, subcategory, type = "all", sortBy = null } = router.query;
+  const { category, subcategory, child, type = "all", sortBy = null } = router.query;
   const [allProducts, setAllProducts] = useState([]);
   const [loading, setLoading] = useState(true)
 
@@ -43,6 +43,7 @@ export default function CategoryPage() {
         const products = await getAllProducts({
           category: category,
           subcategory: subcategory,
+          child: child,
           type: type,
           sortBy: sortBy,
         });
@@ -73,6 +74,7 @@ export default function CategoryPage() {
               root: 'home',
               first: category,
               second: subcategory,
+              third: child,
             }}
           />
         </Box>

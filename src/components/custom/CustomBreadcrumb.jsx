@@ -5,8 +5,8 @@ import formatTitle from '@/helper/slug';
 export default function CustomBreadcrumb({ data = {}, ...props }) {
   return (
     <Breadcrumb.Root {...props}>
-        <Breadcrumb.List>
-          <Flex direction="row" flexWrap="nowrap" alignItems="center" overflowX="auto" gap={2}>
+      <Breadcrumb.List>
+        <Flex direction="row" flexWrap="nowrap" alignItems="center" overflowX="auto" gap={2}>
           <Breadcrumb.Item as={Link} href='/'>
             <Text textWrap="nowrap">{formatTitle(data.root || 'Home')}</Text>
           </Breadcrumb.Item>
@@ -16,7 +16,7 @@ export default function CustomBreadcrumb({ data = {}, ...props }) {
               <Breadcrumb.Separator />
               <Breadcrumb.Item as={Link} href={`/${data.first}`}>
                 <Text textWrap="nowrap">
-                {formatTitle(data.first)}
+                  {formatTitle(data.first)}
                 </Text>
               </Breadcrumb.Item>
             </>
@@ -26,7 +26,7 @@ export default function CustomBreadcrumb({ data = {}, ...props }) {
               <Breadcrumb.Separator />
               <Breadcrumb.Item as={Link} href={`/${data.first}/${data.second}`}>
                 <Text textWrap="nowrap">
-                { formatTitle(data.second)}
+                  {formatTitle(data.second)}
                 </Text>
               </Breadcrumb.Item>
             </>
@@ -35,14 +35,24 @@ export default function CustomBreadcrumb({ data = {}, ...props }) {
             <>
               <Breadcrumb.Separator />
               <Breadcrumb.Item as={Link} href={`/${data.first}/${data.second}/${data.third}`}>
-                  <Text textWrap="nowrap">
-                    {formatTitle(data.third)}
-                  </Text>
+                <Text textWrap="nowrap">
+                  {formatTitle(data.third)}
+                </Text>
               </Breadcrumb.Item>
             </>
           )}
-          </Flex>
-        </Breadcrumb.List>
+          {data.fourth && (
+            <>
+              <Breadcrumb.Separator />
+              <Breadcrumb.Item as={Link} href={`/${data.first}/${data.second}/${data.third}/${data.fourth}`}>
+                <Text textWrap="nowrap">
+                  {formatTitle(data.fourth)}
+                </Text>
+              </Breadcrumb.Item>
+            </>
+          )}
+        </Flex>
+      </Breadcrumb.List>
     </Breadcrumb.Root>
   );
 }

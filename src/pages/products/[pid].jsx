@@ -65,21 +65,6 @@ export default function ProductPage() {
         : null;
 
       setInventory(branchInventory || { available: 0, sold: 0 });
-
-      console.log(inventory)
-      // const { data, error } = await supabase
-      //   .from('products')
-      //   .select('*')
-      //   .eq('slug', pid)
-      //   .limit(1)
-      //   .single();
-
-      // if (error) {
-      //   console.error('Error fetching product:', error);
-      //   setIsLoading(false);
-      //   return;
-      // }
-
       setProduct(inventory);
       setIsLoading(false);
     };

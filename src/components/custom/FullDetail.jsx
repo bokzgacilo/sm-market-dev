@@ -32,8 +32,6 @@ export default function FullDetail({ order: orderData, cart }) {
 
   useEffect(() => {
     const fetchOrder = async () => {
-      console.log(orderData.reference_number)
-
       const { data, error } = await supabase
         .from("orders")
         .select("*")
@@ -52,7 +50,6 @@ export default function FullDetail({ order: orderData, cart }) {
         .eq("order_ref", orderData.reference_number);
 
       if (error) console.error(error);
-      console.log(data)
       setDelivery(data[0] ?? []);
     };
 
@@ -72,7 +69,6 @@ export default function FullDetail({ order: orderData, cart }) {
           filter: `order_ref=eq.${orderData.reference_number}`,
         },
         (data) => {
-          console.log(data)
           fetchDelivery(); // refetch only deliveries
         }
       )

@@ -52,7 +52,6 @@ export default function ProductIndex() {
         "postgres_changes",
         { event: "*", schema: "public", table: "products" },
         (payload) => {
-          console.log("Product change detected:", payload);
           fetchAllProducts(); // re-fetch on change
         }
       )

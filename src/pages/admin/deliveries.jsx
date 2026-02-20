@@ -68,7 +68,6 @@ export default function Deliveries() {
         "postgres_changes",
         { event: "*", schema: "public", table: "deliveries" },
         async (data) => {
-          console.log(data);
           await fetchAllOrders();
         }
       )

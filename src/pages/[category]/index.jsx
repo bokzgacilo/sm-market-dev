@@ -7,6 +7,7 @@ import {
   Flex,
   Heading,
   HStack,
+  Image,
   IconButton,
   NativeSelect,
   Text,
@@ -18,13 +19,14 @@ import {
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useCallback, useEffect, useState } from 'react';
-import { FiFilter } from 'react-icons/fi';
+import { useEffect, useState } from 'react';
 import CustomBreadcrumb from '@/components/custom/CustomBreadcrumb';
 import ProductCard from '@/components/custom/ProductCard';
 import formatTitle from '@/helper/slug';
 import { getAllProducts, supabase } from '@/helper/supabase';
 import Filters from '@/components/custom/Filters';
+import { categories } from '@/constants/Categories';
+import Page404 from '@/components/404';
 
 export default function CategoryPage() {
   const router = useRouter();
@@ -33,47 +35,32 @@ export default function CategoryPage() {
   const [allProducts, setAllProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    if (!router.isReady) return; // Wait until router has the query params
-    if (!category) return;
-
-    const getSubcategories = async () => {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('subcategories')
-        .eq('slug', category)
-        .limit(1);
-      if (error) {
-        console.error(error)
-        return;
-      }
-      setSubcategoriesArray(data[0].subcategories)
-    }
-
-    const fetchProducts = async () => {
-      setIsLoading(true);
-      try {
-        const products = await getAllProducts({
-          category: category,
-          type: type,
-          sortBy: sortBy
-        });
-        setAllProducts(products);
-      } catch (err) {
-        console.error(err);
-        setAllProducts([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    getSubcategories()
-    fetchProducts();
-  }, [category, router])
+  const categoryIsExisting = categories.some((cat) => cat.path === category)
 
   const pageTitle = category
     ? `${formatTitle(category)} | SM Supermarket`
     : 'Category | SM Supermarket';
+
+  useEffect(() => {
+    if (!router.isReady || !category) return;
+    const subcategories = categories.find((cat) => cat.path === category)?.subcategories
+    setSubcategoriesArray(subcategories)
+
+    const fetchProducts = async () => {
+      const products = await getAllProducts({
+        category: category,
+        type: type,
+        sortBy: sortBy,
+      });
+      if (products) setIsLoading(false)
+      setAllProducts(products)
+    }
+    fetchProducts()
+  }, [router.isReady, category])
+
+  if (router.isReady && !categoryIsExisting) {
+    return <Page404 />
+  }
 
   return (
     <>
@@ -96,16 +83,10 @@ export default function CategoryPage() {
 
           {category && (
             <Flex direction='row' gap={4}>
-              {subcategoriesArray.map((sub) => (
-                <Link key={sub} href={`/${category}/${sub}`}>
+              {subcategoriesArray.map((subcat) => (
+                <Link key={subcat.path} href={`/${category}/${subcat.path}`}>
                   <Tag.Root size='xl' rounded='full'>
-                    <Tag.Label>
-                      {sub
-                        .replace(/-/g, " ") // replace hyphens with spaces
-                        .split(" ") // split into words
-                        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                        .join(" ")}
-                    </Tag.Label>
+                    <Tag.Label>{subcat.label}</Tag.Label>
                   </Tag.Root>
                 </Link>
               ))}

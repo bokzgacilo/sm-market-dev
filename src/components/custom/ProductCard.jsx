@@ -76,7 +76,7 @@ export default function ProductCard({ pid, ...props }) {
       _hover={{ borderColor: "gray.300" }}
       {...props}
     >
-      <Link href={`/${product.category}/${product.subcategory}/${product.slug}`} passHref>
+      <Link href={`/products/${product.slug}`} passHref>
         <Stack gap={4}>
           <Stack position="relative">
             <Image

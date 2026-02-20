@@ -34,7 +34,6 @@ export default function Orders() {
   useEffect(() => {
     getSalesMetrics()
       .then(metrics => {
-        console.log(metrics)
         setMetrics(metrics)
       })
   }, [])
@@ -126,7 +125,6 @@ export default function Orders() {
                     <Table.Cell
                       cursor="pointer"
                       onClick={() => {
-                        console.log(order)
                         setOpen(true)
                         setCart(order.cart_items)
                         setOrder(order)

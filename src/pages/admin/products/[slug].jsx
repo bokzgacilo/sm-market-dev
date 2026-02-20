@@ -76,7 +76,6 @@ export default function ProductDetails({ slug, close }) {
           filter: `product_id=eq.${product.id}`,
         },
         (payload) => {
-          console.log('Inventory updated:', payload);
           setInventory(payload.new);
         }
       )

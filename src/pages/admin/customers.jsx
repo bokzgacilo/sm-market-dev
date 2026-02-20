@@ -10,8 +10,6 @@ export default function Customers() {
       const { data } = await supabase
         .from("users")
         .select("last_name, first_name, email, dob, phone, gender")
-
-      console.log(data)
       setCustomers(data)
     }
 
@@ -49,7 +47,7 @@ export default function Customers() {
                 </Table.Row>
               ))}
             </Table.Body>
-            
+
           </Table.Root>
         </Card.Body>
         <Card.Footer>

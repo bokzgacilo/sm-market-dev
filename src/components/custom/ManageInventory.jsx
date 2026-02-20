@@ -23,7 +23,6 @@ export default function ManageInventory({ product_id, update }) {
         }
 
         setInventory(data);
-        console.log(data);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -51,7 +50,7 @@ export default function ManageInventory({ product_id, update }) {
       }
     }));
 
-    
+
   };
 
   if (loading) return <Text>Loading inventory...</Text>;
@@ -81,7 +80,7 @@ export default function ManageInventory({ product_id, update }) {
                   variant="outline"
                   value={inventory[loc].available}
                   onValueChange={(e) => handleInventoryChange(loc, 'available', e.value)}
-                  min={0  }
+                  min={0}
                 >
                   <NumberInput.Control />
                   <NumberInput.Input />

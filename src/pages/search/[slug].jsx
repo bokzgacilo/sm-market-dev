@@ -39,8 +39,6 @@ export default function SearchPage() {
         type: type,
         sortBy: sortBy,
       });
-
-      console.log(products)
       setResults(products);
       setIsLoading(false);
     };

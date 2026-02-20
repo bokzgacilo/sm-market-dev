@@ -125,7 +125,6 @@ export function CartProvider({ children }) {
         },
         async (payload) => {
           await fetchCart();
-          console.log(cartItems)
         }
       )
       .subscribe();

@@ -32,7 +32,7 @@ export default function CartItem({ data, refresh, compute_total = null }) {
     getProduct();
   }, [data.pid]);
 
-  
+
   // Update debounced value after 0.5s
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -75,12 +75,8 @@ export default function CartItem({ data, refresh, compute_total = null }) {
         setLoading(false);
         return;
       }
-
-
       const matchedStoreInventory = inventoryJSON[store_code];
       setInventory(matchedStoreInventory);
-      console.log(matchedStoreInventory)
-
       if (data.quantity > matchedStoreInventory?.available) {
         setIsOutOfStock(true);
       } else {
@@ -171,7 +167,7 @@ export default function CartItem({ data, refresh, compute_total = null }) {
           alignItems="flex-end"
           gap={0}
           flex={1}
-          
+
         >
           <Heading>
             ₱ {(

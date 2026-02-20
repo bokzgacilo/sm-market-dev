@@ -33,7 +33,6 @@ export default function EditProduct() {
         .select('*')
         .eq('id', pid)
         .single()
-      console.log(data)
       setForm(data)
       setImages(data.images)
       setUrl(data["3d_model"])
@@ -73,7 +72,6 @@ export default function EditProduct() {
           .getPublicUrl(filePath);
 
         uploadedUrls.push(publicData.publicUrl);
-        console.log(publicData)
       }
 
       setForm((prev) => ({
@@ -104,11 +102,7 @@ export default function EditProduct() {
         .from("3d-models")
         .getPublicUrl(fileName);
 
-      console.log(publicData)
-
-
       setForm({ ...form, "3d_model": publicData.publicUrl });
-
       const updatedForm = {
         ...form,
         images: uploadedUrls,
@@ -125,8 +119,6 @@ export default function EditProduct() {
         console.error("Insert error:", insertError);
         return;
       }
-
-      console.log("✅ Product added successfully:", data);
       alert("Product added successfully!");
     } catch (err) {
       console.error(err)
@@ -310,14 +302,10 @@ export default function EditProduct() {
                         accept={["image/*"]}
                         maxFiles={4}
                         onFileChange={(e) => {
-                          console.log("Files changed");
-                          // Always clear previous images
-                          console.log("Changed files:", e.files || e.acceptedFiles);
                           const urls = e.acceptedFiles.map((file) => URL.createObjectURL(file));
                           setImages(urls);
                         }}
                         onFileAccept={(e) => {
-                          console.log('clear images')
                         }}
                       >
                         <FileUpload.HiddenInput />

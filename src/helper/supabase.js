@@ -8,6 +8,7 @@ export const supabase = createClient(
 export const getAllProducts = async ({
   category = null,
   subcategory = null,
+  child = null,
   type = "all",      // "all" | "new" | "sale"
   brand = null,      // filter by brand
   sortBy = null,
@@ -19,6 +20,7 @@ export const getAllProducts = async ({
   // Category filter
   if (category) query = query.eq("category", category);
   if (subcategory) query = query.eq("subcategory", subcategory);
+  if (child) query = query.eq("child", child);
 
   // Type filter
   const now = new Date();

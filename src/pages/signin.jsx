@@ -28,8 +28,6 @@ export default function Signin() {
 
   useEffect(() => {
     if (!localStorage.getItem("auth_id")) return;
-
-    console.log("tets")
   }, [])
 
   // if (auth) {

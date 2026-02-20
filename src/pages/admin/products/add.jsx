@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { LuRefreshCcw, LuTrash2, LuUpload, LuX } from "react-icons/lu";
 import ProductViewer from "@/components/custom/ProductViewer";
 import { supabase } from "@/helper/supabase";
+import { categories } from "@/constants/Categories";
 
 function slugify(text) {
   return text
@@ -16,8 +17,6 @@ function slugify(text) {
 }
 
 export default function AddProduct() {
-  const [categories, setCategories] = useState([])
-  const [subcategories, setSubcategories] = useState([])
   const [images, setImages] = useState([])
   const [url, setUrl] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -28,39 +27,17 @@ export default function AddProduct() {
     compare_at_price: 75,
     isSale: false,
     sale_price: 50,
-    category: "",
-    subcategory: "",
+    category: "home-and-essentials",
+    subcategory: "appliances",
+    child: "cooking-and-stoves",
     "3d_model": "",
     images: [],
     slug: "",
     description: ""
   })
 
-  useEffect(() => {
-    const getAllCategories = async () => {
-      const { data } = await supabase
-        .from('categories')
-        .select('name,slug,subcategories')
-
-      if (data) {
-        setCategories(data)
-        setSubcategories(Object.values(data)[0].subcategories);
-        setForm({
-          ...form,
-          category: data[0].slug,
-          subcategory: Object.values(data)[0].subcategories[0],
-        });
-      }
-    }
-
-    getAllCategories()
-  }, [])
-
-  useEffect(() => {
-    const selected = categories.find(item => item.slug === form.category);
-    setSubcategories(selected ? selected.subcategories : []);
-    setForm({ ...form, subcategory: subcategories[0] })
-  }, [form.category])
+  const subcategories = categories.find(item => item.path === form.category)?.subcategories || [];
+  const children = subcategories.find(item => item.path === form.subcategory)?.child || [];
 
   const handleAddProduct = async () => {
     setLoading(true)
@@ -94,7 +71,6 @@ export default function AddProduct() {
           .getPublicUrl(filePath);
 
         uploadedUrls.push(publicData.publicUrl);
-        console.log(publicData)
       }
 
       setForm((prev) => ({
@@ -124,10 +100,6 @@ export default function AddProduct() {
       const { data: publicData } = await supabase.storage
         .from("3d-models")
         .getPublicUrl(fileName);
-
-      console.log(publicData)
-
-
       setForm({ ...form, "3d_model": publicData.publicUrl });
 
       const updatedForm = {
@@ -145,8 +117,6 @@ export default function AddProduct() {
         console.error("Insert error:", insertError);
         return;
       }
-
-      console.log("✅ Product added successfully:", data);
       alert("Product added successfully!");
     } catch (err) {
       console.error(err)
@@ -161,7 +131,7 @@ export default function AddProduct() {
         <Card.Root>
           <Card.Header p={4}>
             <Card.Title>
-              <Heading>Add New Product</Heading>
+              Add New Product
             </Card.Title>
           </Card.Header>
           <Separator />
@@ -226,7 +196,7 @@ export default function AddProduct() {
                 >
                   <NativeSelect.Field>
                     {categories.map((category) =>
-                      <option key={category.slug} value={category.slug}>{category.name}</option>
+                      <option key={category.path} value={category.path}>{category.label}</option>
                     )}
                   </NativeSelect.Field>
                 </NativeSelect.Root>
@@ -234,15 +204,27 @@ export default function AddProduct() {
               <Field.Root>
                 <Field.Label>Sub-Category</Field.Label>
                 <NativeSelect.Root
-                  disabled
-
                   value={form.subcategory}
                   onChange={(e) => setForm({ ...form, subcategory: e.target.value })}
                 >
                   <NativeSelect.Field>
-                    {subcategories.map((subcategory) =>
-                      <option key={subcategory} value={subcategory}>{subcategory}</option>
+                    {categories.find(item => item.path === form.category)?.subcategories.map((subcat) =>
+                      <option key={subcat.path} value={subcat.path}>{subcat.label}</option>
                     )}
+                  </NativeSelect.Field>
+                </NativeSelect.Root>
+              </Field.Root>
+              <Field.Root>
+                <Field.Label>Child</Field.Label>
+                <NativeSelect.Root
+                  disabled={children.length === 0}
+                  value={form.child}
+                  onChange={(e) => setForm({ ...form, child: e.target.value })}
+                >
+                  <NativeSelect.Field>
+                    {children.length > 0 ? children.map((child) =>
+                      <option key={child.path} value={child.path}>{child.label}</option>
+                    ) : <option value="">No Child</option>}
                   </NativeSelect.Field>
                 </NativeSelect.Root>
               </Field.Root>
@@ -320,14 +302,8 @@ export default function AddProduct() {
                       accept={["image/*"]}
                       maxFiles={4}
                       onFileChange={(e) => {
-                        console.log("Files changed");
-                        // Always clear previous images
-                        console.log("Changed files:", e.files || e.acceptedFiles);
                         const urls = e.acceptedFiles.map((file) => URL.createObjectURL(file));
                         setImages(urls);
-                      }}
-                      onFileAccept={(e) => {
-                        console.log('clear images')
                       }}
                     >
                       <FileUpload.HiddenInput />
@@ -354,7 +330,7 @@ export default function AddProduct() {
           </Card.Root>
         </Stack>
       </SimpleGrid>
-      
+
     </Stack>
   )
 }

@@ -36,11 +36,14 @@ const settings = {
 export default function ProductPage() {
   const router = useRouter();
   const { addToCart } = useCart();
-  const { category, subcategory, pid } = router.query;
+  const { pid } = router.query;
   const [product, setProduct] = useState(null);
   const [inventory, setInventory] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
+  const [category, setCategory] = useState(null);
+  const [subcategory, setSubcategory] = useState(null);
+  const [child, setChild] = useState(null);
 
   useEffect(() => {
     if (!pid) return;
@@ -49,7 +52,7 @@ export default function ProductPage() {
       setIsLoading(true);
       const { data: product } = await supabase
         .from('products')
-        .select('id')
+        .select('id, category, subcategory, child')
         .eq('slug', pid)
         .single()
 
@@ -64,6 +67,9 @@ export default function ProductPage() {
         ? inventory[branch.branch_code]
         : null;
 
+      setCategory(product.category);
+      setSubcategory(product.subcategory);
+      setChild(product.child);
       setInventory(branchInventory || { available: 0, sold: 0 });
       setProduct(inventory);
       setIsLoading(false);
@@ -89,7 +95,8 @@ export default function ProductPage() {
               root: 'home',
               first: category,
               second: subcategory,
-              third: pid,
+              third: child,
+              fourth: pid,
             }}
           />
 

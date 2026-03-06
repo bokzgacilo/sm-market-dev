@@ -7,6 +7,7 @@ import ProductViewer from "@/components/custom/ProductViewer";
 import { supabase } from "@/helper/supabase";
 import { useRouter } from "next/router";
 import Head from "next/head";
+import { categories } from "@/constants/Categories";
 
 function slugify(text) {
   return text
@@ -23,23 +24,33 @@ export default function EditProduct() {
   const [images, setImages] = useState([])
   const [url, setUrl] = useState(null)
   const [loading, setLoading] = useState(false)
-
+  const [pageloading, setPageloading] = useState(true)
   const [form, setForm] = useState(null)
+  const subcategories = categories.find(item => item.path === form?.category)?.subcategories || [];
+  const children = subcategories.find(item => item.path === form?.subcategory)?.child || [];
 
   useEffect(() => {
+    if (!pid) return
+
     const fetchProduct = async () => {
       const { data } = await supabase
-        .from('products')
-        .select('*')
-        .eq('id', pid)
+        .from("products")
+        .select("*")
+        .eq("id", pid)
         .single()
-      setForm(data)
-      setImages(data.images)
-      setUrl(data["3d_model"])
+
+      if (data) {
+        setForm(data)
+        setImages(data.images || [])
+        setUrl(data["3d_model"] || null)
+      }
+
+      setPageloading(false)
     }
 
     fetchProduct()
   }, [pid])
+
 
   const handleEditProduct = async () => {
     setLoading(true)
@@ -119,7 +130,7 @@ export default function EditProduct() {
         console.error("Insert error:", insertError);
         return;
       }
-      alert("Product added successfully!");
+      alert("Product updated successfully!");
     } catch (err) {
       console.error(err)
     } finally {
@@ -127,9 +138,7 @@ export default function EditProduct() {
     }
   }
 
-  if (!form) {
-    return <Text>Loading...</Text>
-  }
+  if (!form) return null
 
   return (
     <>
@@ -141,7 +150,7 @@ export default function EditProduct() {
           <Card.Root>
             <Card.Header p={4}>
               <Card.Title>
-                <Heading>Edit Product</Heading>
+                Edit Product
               </Card.Title>
             </Card.Header>
             <Separator />
@@ -206,21 +215,36 @@ export default function EditProduct() {
                     onChange={(e) => setForm({ ...form, category: e.target.value })}
                   >
                     <NativeSelect.Field>
-                      <option value="home-and-essentials">Home and Essentials</option>
+                      {categories.map((category) =>
+                        <option key={category.path} value={category.path}>{category.label}</option>
+                      )}
                     </NativeSelect.Field>
                   </NativeSelect.Root>
                 </Field.Root>
                 <Field.Root>
                   <Field.Label>Sub-Category</Field.Label>
                   <NativeSelect.Root
-                    disabled
                     value={form.subcategory}
                     onChange={(e) => setForm({ ...form, subcategory: e.target.value })}
                   >
                     <NativeSelect.Field>
-                      <option value="dining">Dining</option>
-                      <option value="kitchenware">Kitchenware</option>
-                      <option value="disposables">Disposables</option>
+                      {categories.find(item => item.path === form.category)?.subcategories.map((subcat) =>
+                        <option key={subcat.path} value={subcat.path}>{subcat.label}</option>
+                      )}
+                    </NativeSelect.Field>
+                  </NativeSelect.Root>
+                </Field.Root>
+                <Field.Root>
+                  <Field.Label>Child</Field.Label>
+                  <NativeSelect.Root
+                    disabled={children.length === 0}
+                    value={form.child}
+                    onChange={(e) => setForm({ ...form, child: e.target.value })}
+                  >
+                    <NativeSelect.Field>
+                      {children.length > 0 ? children.map((child) =>
+                        <option key={child.path} value={child.path}>{child.label}</option>
+                      ) : <option value="">No Child</option>}
                     </NativeSelect.Field>
                   </NativeSelect.Root>
                 </Field.Root>
@@ -332,7 +356,7 @@ export default function EditProduct() {
             </Card.Root>
           </Stack>
         </SimpleGrid>
-      </Stack>
+      </Stack >
     </>
   )
 }

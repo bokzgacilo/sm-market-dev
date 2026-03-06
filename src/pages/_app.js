@@ -9,7 +9,6 @@ import { AuthProvider } from '@/context/AuthContext';
 import AdminLayout from './admin/layout';
 import { useEffect, useState } from 'react';
 import { CartProvider } from '@/context/CartContext';
-import { Analytics } from '@vercel/analytics/next';
 
 export default function App({ Component, pageProps }) {
   const noAdminLayout = ["/admin/signin"];
@@ -43,7 +42,6 @@ export default function App({ Component, pageProps }) {
           </CartProvider>
         )}
       </Theme>
-      <Analytics />
     </Provider>
   );
 }

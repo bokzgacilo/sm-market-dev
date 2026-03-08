@@ -5,7 +5,6 @@ import 'slick-carousel/slick/slick-theme.css';
 import '@/styles/globals.css';
 import { Theme } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
-import { AuthProvider } from '@/context/AuthContext';
 import AdminLayout from './admin/layout';
 import { useEffect, useState } from 'react';
 import { CartProvider } from '@/context/CartContext';

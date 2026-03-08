@@ -49,7 +49,7 @@ export default function Signin() {
           Welcome Back!
         </Heading>
 
-        <SimpleGrid columns={{ base: 1, md: 1 }} justif gap={6} width={{ base: "100%", lg: "30%" }}>
+        <SimpleGrid columns={{ base: 1, md: 1 }} justif gap={6} width={{ base: "100%", md: "50%" }}>
           <Card.Root>
             <Card.Body>
               <Stack gap={4}>

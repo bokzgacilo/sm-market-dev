@@ -51,7 +51,6 @@ export default function EditProduct() {
     fetchProduct()
   }, [pid])
 
-
   const handleEditProduct = async () => {
     setLoading(true)
     try {
@@ -113,12 +112,13 @@ export default function EditProduct() {
         .from("3d-models")
         .getPublicUrl(fileName);
 
-      setForm({ ...form, "3d_model": publicData.publicUrl });
       const updatedForm = {
         ...form,
         images: uploadedUrls,
         "3d_model": publicData.publicUrl
       };
+
+      console.log(updatedForm)
 
       const { data, error: insertError } = await supabase
         .from("products")
@@ -126,11 +126,13 @@ export default function EditProduct() {
         .eq("id", updatedForm.id)  // match record by id
         .select();
 
-      if (insertError) {
-        console.error("Insert error:", insertError);
+      if (data) {
+        console.log("Product updated successfully!");
+        return;
+      } else {
+        console.log("Product updated failed!");
         return;
       }
-      alert("Product updated successfully!");
     } catch (err) {
       console.error(err)
     } finally {

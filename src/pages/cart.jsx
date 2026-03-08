@@ -59,118 +59,49 @@ export default function Cart() {
           .in('id', slugs);
         if (productError) throw productError;
 
-        const line_items = cartItems.map(cartItem => {
-          const product = products.find(p => p.id === cartItem.pid);
-          if (!product) return null;
-          const AMOUNT = product.isSale
-            ? product.compare_at_price * 100
-            : product.price * 100;
+        const line_items = cartItems
+          .map(cartItem => {
+            const product = products.find(p => p.id === cartItem.pid);
+            if (!product) return null;
 
-          return {
-            name: product.title,
-            amount: AMOUNT,
-            currency: 'PHP',
-            quantity: cartItem.quantity,
-          };
-        }).filter(Boolean);
+            const AMOUNT = product.isSale
+              ? product.compare_at_price * 100
+              : product.price * 100;
+
+            return {
+              name: product.title,
+              amount: AMOUNT,
+              currency: "PHP",
+              description: "",
+              quantity: cartItem.quantity
+            };
+          })
+          .filter(Boolean);
 
         const total_amount = line_items.reduce(
           (sum, item) => sum + item.amount * item.quantity,
           0
         );
-        const authHeader = `Basic ${btoa(secretKey)}:`;
         const ref = `${Date.now()}`;
-        const response = await axios.post(
-          'https://api.paymongo.com/v1/checkout_sessions',
-          {
-            data: {
-              attributes: {
-                reference_number: ref,
-                send_email_receipt: true,
-                description: 'SM Market Mapua Payment',
-                payment_method_types: ['card', 'gcash', 'qrph', 'paymaya'],
-                line_items,
-                success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/api/payment-success?ref=${ref}`,
-                failed_url: 'https://yourwebsite.com/failed',
-              },
-            },
-          },
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: authHeader, // Basic auth
-            },
-          }
-        );
+        let ship_to;
 
-        if (response.data) {
-          for (const item of cartItems) {
-            const { pid, quantity } = item;
-
-            const { data: inventoryRow } = await supabase
-              .from("inventory")
-              .select("*")
-              .eq("product_id", pid)
-              .single();
-
-            const branchInv = inventoryRow[store_code];
-
-            const updatePayload = {};
-            updatePayload[store_code] = {
-              ...branchInv,
-              available: branchInv.available - quantity,
-              sold: branchInv.sold + quantity
-            };
-
-            await supabase
-              .from("inventory")
-              .update(updatePayload)
-              .eq("product_id", pid);
-          }
-
-          const cid = response.data.data.id;
-
-          let ship_to;
-
-          if (method === "pickup") {
-            ship_to = JSON.parse(localStorage.getItem("branch_location"));
-          } else {
-            ship_to = userData.shipping_address;
-          }
-
-          const order_json = {
-            checkout_id: cid,
-            reference_number: ref,
-            customer_id: auth_id,
-            cart_items: cartItems,
-            total_amount: total_amount,
-            status: "pending",
-            shipping_method: method,
-            shipping_address: ship_to
-          };
-
-          const { error: insertError } = await supabase
-            .from("orders")
-            .insert([order_json])
-            .select(); // optional, returns inserted record
-
-          if (insertError) {
-            console.error("Error inserting order:", insertError.message);
-          } else {
-            // ✅ Clear user's cart after order creation
-            const { error: updateError } = await supabase
-              .from("users")
-              .update({ cart_item: [] })
-              .eq("id", auth_id);
-
-            if (updateError) {
-              console.error("Error clearing cart:", updateError.message);
-            }
-
-            // ✅ Redirect to PayMongo checkout
-            const checkoutUrl = response.data.data.attributes.checkout_url;
-            window.location.href = checkoutUrl;
-          }
+        if (method === "pickup") {
+          ship_to = JSON.parse(localStorage.getItem("branch_location"));
+        } else {
+          ship_to = userData.shipping_address;
+        }
+        const { data: checkoutSession, error } = await axios.post("/api/payment", {
+          ref,
+          method,
+          store_code,
+          auth_id,
+          ship_to,
+          cartItems,
+          total_amount,
+          line_items: JSON.stringify(line_items) // ✅ stringify here
+        });
+        if (checkoutSession.success) {
+          window.location.href = checkoutSession.checkout_url;
         }
       } catch (err) {
         console.error('Failed to create checkout session:', err.response?.data || err);

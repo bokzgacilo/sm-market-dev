@@ -195,13 +195,14 @@ export default function CartItem({ data, refresh, compute_total = null }) {
           left={0}
           w="100%"
           h="100%"
-          bg="gray.800"
+          bg="black"
           opacity={0.7}
           display="flex"
           alignItems="center"
           justifyContent="center"
           rounded="lg"
           zIndex={10}
+          pointerEvents="none"
         >
           <Text color="white" fontSize="xl" fontWeight="bold">
             OUT OF STOCK

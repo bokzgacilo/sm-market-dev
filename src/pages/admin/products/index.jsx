@@ -31,7 +31,7 @@ export default function ProductIndex() {
 
       if (search?.trim()) {
         query = query.or(
-          `slug.ilike.%${search}%`
+          `slug.ilike.%${search}%,title.ilike.%${search}%`
         );
       }
 

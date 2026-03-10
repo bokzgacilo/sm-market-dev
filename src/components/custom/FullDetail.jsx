@@ -81,17 +81,19 @@ export default function FullDetail({ order: orderData, cart }) {
   }, [orderData.reference_number]);
 
   const handleCompletePayment = async (cid) => {
-    const secretKey = 'sk_test_Y5BxqyZzNUjNgMLebHFh1Jhy';
-    const response = await axios.get(
-      `https://api.paymongo.com/v1/checkout_sessions/${cid}`,
-      {
-        headers: {
-          accept: 'application/json',
-          Authorization: `Basic ${Buffer.from(secretKey).toString('base64')}`,
-        },
+    const response = await fetch("/api/get-checkout", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
-    window.location.href = response.data.data.attributes.checkout_url;
+      body: JSON.stringify({
+        checkout_id: cid,
+      }),
+    });
+
+    const data = await response.json();
+
+    window.location = data.checkout_url;
   };
 
   return (

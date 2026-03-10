@@ -90,6 +90,7 @@ export default function Cart() {
         } else {
           ship_to = userData.shipping_address;
         }
+
         const { data: checkoutSession, error } = await axios.post("/api/payment", {
           ref,
           method,
@@ -100,6 +101,7 @@ export default function Cart() {
           total_amount,
           line_items: JSON.stringify(line_items) // ✅ stringify here
         });
+
         if (checkoutSession.success) {
           window.location.href = checkoutSession.checkout_url;
         }

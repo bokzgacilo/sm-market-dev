@@ -16,7 +16,8 @@ export default async function handler(req, res) {
           show_description: true,
           show_line_items: true,
           line_items: parsedLineItems,
-          payment_method_types: ["card", "gcash"]
+          payment_method_types: ["card", "gcash"],
+          success_url: 'https://smmarket-dev.vercel.app/api/payment-success?ref=' + ref
         }
       }
     }

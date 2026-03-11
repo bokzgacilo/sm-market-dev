@@ -4,8 +4,6 @@ import axios from "axios";
 export default async function handler(req, res) {
   try {
     const { ref } = req.query;
-    const secretKey = "sk_test_Y5BxqyZzNUjNgMLebHFh1Jhy";
-
     // 1️⃣ Get checkout_id from Supabase
     const { data, error } = await supabase
       .from("orders")
@@ -22,9 +20,9 @@ export default async function handler(req, res) {
       `https://api.paymongo.com/v1/checkout_sessions/${data.checkout_id}`,
       {
         headers: {
-          accept: "application/json",
-          Authorization: `Basic ${Buffer.from(secretKey).toString("base64")}`,
-        },
+          "Content-Type": "application/json",
+          Authorization: "Basic c2tfdGVzdF9ZNUJ4cXlaek5Vak5nTUxlYkhGaDFKaHk6"
+        }
       }
     );
 

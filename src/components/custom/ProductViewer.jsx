@@ -17,6 +17,7 @@ import { Suspense, useCallback, useRef } from 'react';
 import {
   LuCircleHelp,
   LuHand,
+  LuMouse,
   LuMousePointerClick,
   LuMove3D,
   LuZoomIn,
@@ -26,6 +27,52 @@ import {
 function Model({ url }) {
   const { scene } = useGLTF(url);
   return <primitive object={scene} scale={1} />;
+}
+
+function ControlChip({ children }) {
+  return (
+    <Flex
+      align='center'
+      justify='center'
+      minW='24px'
+      h='24px'
+      px={2}
+      rounded='md'
+      borderWidth='1px'
+      borderColor='blue.200'
+      bg='white'
+      color='blue.700'
+      fontSize='xs'
+      fontWeight='semibold'
+      boxShadow='xs'
+      flexShrink={0}
+    >
+      {children}
+    </Flex>
+  );
+}
+
+function HelpRow({ icon, children, muted = false }) {
+  return (
+    <HStack align='start' gap={3}>
+      <Flex
+        align='center'
+        justify='center'
+        boxSize={8}
+        rounded='lg'
+        borderWidth='1px'
+        borderColor='gray.200'
+        color='gray.600'
+        bg='white'
+        flexShrink={0}
+      >
+        <Icon as={icon} boxSize={4} />
+      </Flex>
+      <Text fontSize='sm' color={muted ? 'fg.muted' : 'fg'}>
+        {children}
+      </Text>
+    </HStack>
+  );
 }
 
 export default function ProductViewer({ modelUrl }) {
@@ -99,35 +146,35 @@ export default function ProductViewer({ modelUrl }) {
           </Popover.Trigger>
           <Portal>
             <Popover.Positioner>
-              <Popover.Content maxW='320px'>
+              <Popover.Content maxW='420px' rounded='2xl' boxShadow='xl'>
                 <Popover.Arrow>
                   <Popover.ArrowTip />
                 </Popover.Arrow>
 
                 <Popover.Body>
-                  <Stack gap={4}>
+                  <Stack gap={6}>
                     <HStack align='start' gap={3}>
                       <Flex
                         align='center'
                         justify='center'
-                        boxSize={9}
+                        boxSize={12}
                         rounded='full'
                         bg='blue.50'
                         color='blue.600'
                         flexShrink={0}
                       >
-                        <Icon as={LuMove3D} boxSize={4} />
+                        <Icon as={LuMove3D} boxSize={5} />
                       </Flex>
-                      <Box>
-                        <Text fontWeight='medium'>Rotate product</Text>
-                        <Text fontSize='sm' color='fg.muted'>
-                          <Icon as={LuMousePointerClick} boxSize={3.5} mr={1} />
-                          Click and drag
+                      <Box flex='1'>
+                        <Text fontWeight='semibold' fontSize='lg'>
+                          Rotate product
                         </Text>
-                        <Text fontSize='sm' color='fg.muted'>
-                          <Icon as={LuHand} boxSize={3.5} mr={1} />
-                          Touch and drag
-                        </Text>
+                        <Stack gap={2} mt={2}>
+                          <HelpRow icon={LuMousePointerClick}>
+                            Click and drag
+                          </HelpRow>
+                          <HelpRow icon={LuHand}>Touch and drag</HelpRow>
+                        </Stack>
                       </Box>
                     </HStack>
 
@@ -135,25 +182,53 @@ export default function ProductViewer({ modelUrl }) {
                       <Flex
                         align='center'
                         justify='center'
-                        boxSize={9}
+                        boxSize={12}
                         rounded='full'
                         bg='blue.50'
                         color='blue.600'
                         flexShrink={0}
                       >
-                        <Icon as={LuZoomIn} boxSize={4} />
+                        <Icon as={LuZoomIn} boxSize={5} />
                       </Flex>
-                      <Box>
-                        <Text fontWeight='medium'>Zoom in and out</Text>
-                        <Text fontSize='sm' color='fg.muted'>
-                          Use the + and - buttons on the viewer
+                      <Box flex='1'>
+                        <Text fontWeight='semibold' fontSize='lg'>
+                          Zoom in and out
                         </Text>
-                        <Text fontSize='sm' color='fg.muted'>
-                          Scroll up to zoom in, scroll down to zoom out
-                        </Text>
-                        <Text fontSize='sm' color='fg.muted'>
-                          Pinch in to zoom in, pinch out to zoom out
-                        </Text>
+                        <Stack gap={3} mt={2}>
+                          <HStack align='start' gap={3}>
+                            {/* <HStack gap={1} flexShrink={0}>
+                              <ControlChip>+</ControlChip>
+                              <ControlChip>-</ControlChip>
+                            </HStack> */}
+                            <Text fontSize='sm' color='fg.muted'>
+                              Use the + and - buttons on the viewer
+                            </Text>
+                          </HStack>
+
+                          <Box>
+                            <HelpRow icon={LuMouse}>
+                              Scroll for{' '}
+                              <Text as='span' fontWeight='semibold'>
+                                quick zooming
+                              </Text>
+                            </HelpRow>
+                            <Text fontSize='sm' color='fg.muted' pl={11} mt={1}>
+                              Scroll up to zoom in, scroll down to zoom out
+                            </Text>
+                          </Box>
+
+                          <Box>
+                            <HelpRow icon={LuHand}>
+                              Pinch for{' '}
+                              <Text as='span' fontWeight='semibold'>
+                                fine zooming
+                              </Text>
+                            </HelpRow>
+                            <Text fontSize='sm' color='fg.muted' pl={11} mt={1}>
+                              Pinch in to zoom in, pinch out to zoom out
+                            </Text>
+                          </Box>
+                        </Stack>
                       </Box>
                     </HStack>
                   </Stack>

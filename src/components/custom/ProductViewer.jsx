@@ -1,7 +1,6 @@
 'use client';
 import {
   Box,
-  CloseButton,
   Flex,
   HStack,
   Icon,
@@ -10,16 +9,18 @@ import {
   Portal,
   Stack,
   Text,
+  VStack,
 } from '@chakra-ui/react';
 import { Environment, OrbitControls, useGLTF } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
-import { Suspense } from 'react';
+import { Suspense, useCallback, useRef } from 'react';
 import {
   LuCircleHelp,
   LuHand,
   LuMousePointerClick,
   LuMove3D,
   LuZoomIn,
+  LuZoomOut,
 } from 'react-icons/lu';
 
 function Model({ url }) {
@@ -28,6 +29,27 @@ function Model({ url }) {
 }
 
 export default function ProductViewer({ modelUrl }) {
+  const controlsRef = useRef(null);
+  const minDistance = 1.5;
+  const maxDistance = 8;
+
+  const handleZoom = useCallback((direction) => {
+    const controls = controlsRef.current;
+
+    if (!controls) return;
+
+    const offset = controls.object.position.clone().sub(controls.target);
+    const currentDistance = offset.length();
+    const nextDistance = Math.min(
+      maxDistance,
+      Math.max(minDistance, currentDistance + direction * 0.75),
+    );
+
+    offset.setLength(nextDistance);
+    controls.object.position.copy(controls.target).add(offset);
+    controls.update();
+  }, []);
+
   return (
     <Box
       position='relative'
@@ -36,6 +58,31 @@ export default function ProductViewer({ modelUrl }) {
       rounded={{ base: 0, lg: 'md' }}
       overflow='hidden'
     >
+      <VStack position='absolute' bottom={3} right={3} zIndex={2} gap={2}>
+        <IconButton
+          aria-label='Zoom in on 3D model'
+          size='sm'
+          rounded='full'
+          variant='solid'
+          colorPalette='blue'
+          boxShadow='sm'
+          onClick={() => handleZoom(-1)}
+        >
+          <LuZoomIn />
+        </IconButton>
+        <IconButton
+          aria-label='Zoom out on 3D model'
+          size='sm'
+          rounded='full'
+          variant='solid'
+          colorPalette='blue'
+          boxShadow='sm'
+          onClick={() => handleZoom(1)}
+        >
+          <LuZoomOut />
+        </IconButton>
+      </VStack>
+
       <Box position='absolute' top={3} right={3} zIndex={2}>
         <Popover.Root positioning={{ placement: 'bottom-end' }}>
           <Popover.Trigger asChild>
@@ -99,6 +146,9 @@ export default function ProductViewer({ modelUrl }) {
                       <Box>
                         <Text fontWeight='medium'>Zoom in and out</Text>
                         <Text fontSize='sm' color='fg.muted'>
+                          Use the + and - buttons on the viewer
+                        </Text>
+                        <Text fontSize='sm' color='fg.muted'>
                           Scroll up to zoom in, scroll down to zoom out
                         </Text>
                         <Text fontSize='sm' color='fg.muted'>
@@ -123,9 +173,12 @@ export default function ProductViewer({ modelUrl }) {
             <Environment preset='city' />
           </Suspense>
           <OrbitControls
+            ref={controlsRef}
             autoRotate={false}
             enablePan={false}
             enableZoom={true}
+            minDistance={minDistance}
+            maxDistance={maxDistance}
           />
         </Canvas>
       ) : (

@@ -15,7 +15,11 @@ export const getAllProducts = async ({
   q = null,          // search keyword
 } = {}) => {
 
-  let query = supabase.from("products").select("id").eq("isActive", true);
+  let query = supabase
+    .from("products")
+    .select("id")
+    .eq("isActive", true)
+    .neq("flag_delete", true); // exclude deleted products
 
   // Category filter
   if (category) query = query.eq("category", category);
@@ -24,9 +28,11 @@ export const getAllProducts = async ({
 
   // Type filter
   const now = new Date();
+
   if (type === "new") {
     const yesterday = new Date(now);
     yesterday.setDate(now.getDate() - 1);
+
     query = query.gte("created_at", yesterday.toISOString());
   } else if (type === "sale") {
     query = query.eq("isSale", true);
@@ -37,7 +43,7 @@ export const getAllProducts = async ({
 
   // Keyword search
   if (q) {
-    query = query.ilike("title", `%${q}%`); // matches title containing the keyword, case-insensitive
+    query = query.ilike("title", `%${q}%`);
   }
 
   // Sorting
@@ -45,15 +51,19 @@ export const getAllProducts = async ({
     case "price_asc":
       query = query.order("price", { ascending: true });
       break;
+
     case "price_desc":
       query = query.order("price", { ascending: false });
       break;
+
     case "created_at_asc":
       query = query.order("created_at", { ascending: true });
       break;
+
     case "created_at_desc":
       query = query.order("created_at", { ascending: false });
       break;
+
     default:
       break;
   }
@@ -63,9 +73,7 @@ export const getAllProducts = async ({
   if (error) {
     console.error(error);
     return [];
-  } else {
-    return products;
   }
+
+  return products;
 };
-
-

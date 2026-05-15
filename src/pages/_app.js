@@ -5,41 +5,37 @@ import 'slick-carousel/slick/slick-theme.css';
 import '@/styles/globals.css';
 import { Theme } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
-import AdminLayout from './admin/layout';
 import { useEffect, useState } from 'react';
 import { CartProvider } from '@/context/CartContext';
+import AdminLayout from './admin/layout';
 
 export default function App({ Component, pageProps }) {
-  const noAdminLayout = ["/admin/signin"];
+  const noAdminLayout = ['/admin/signin', '/admin/reset-password'];
   const router = useRouter();
   const isAdminRoute = router.pathname.startsWith('/admin/');
   const useLayout = isAdminRoute && !noAdminLayout.includes(router.pathname);
-  const [authId, setAuthId] = useState(null)
+  const [authId, setAuthId] = useState(null);
 
   useEffect(() => {
-    if (localStorage.getItem("auth_id")) {
-      setAuthId(localStorage.getItem("auth_id"))
+    if (localStorage.getItem('auth_id')) {
+      setAuthId(localStorage.getItem('auth_id'));
     }
-  }, [])
+  }, []);
 
   return (
     <Provider>
-      <Theme appearance="light">
-        {isAdminRoute ? (
-          useLayout ? (
-            <AdminLayout>
-              <Component {...pageProps} />
-            </AdminLayout>
-          ) : (
-            <Component {...pageProps} />
-          )
-        ) : (
-          <CartProvider>
-            <Layout auth={authId}>
-              <Component auth={authId} {...pageProps} />
-            </Layout>
-          </CartProvider>
-        )}
+      <Theme appearance='light'>
+        {isAdminRoute
+          ? useLayout
+            ? <AdminLayout>
+                <Component {...pageProps} />
+              </AdminLayout>
+            : <Component {...pageProps} />
+          : <CartProvider>
+              <Layout auth={authId}>
+                <Component auth={authId} {...pageProps} />
+              </Layout>
+            </CartProvider>}
       </Theme>
     </Provider>
   );

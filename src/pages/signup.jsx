@@ -1,8 +1,10 @@
 import {
+  Box,
   Button,
   Card,
   Field,
   Heading,
+  IconButton,
   Input,
   NativeSelect,
   SimpleGrid,
@@ -10,6 +12,7 @@ import {
 } from '@chakra-ui/react';
 import Head from 'next/head';
 import { useState } from 'react';
+import { LuEye, LuEyeOff } from 'react-icons/lu';
 import CustomBreadcrumb from '@/components/custom/CustomBreadcrumb';
 import { supabase } from '@/helper/supabase';
 
@@ -25,6 +28,8 @@ export default function Signup() {
     gender: 'male',
   });
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -122,26 +127,64 @@ export default function Signup() {
 
                 <Field.Root>
                   <Field.Label>Password</Field.Label>
-                  <Input
-                    name='password'
-                    type='password'
-                    placeholder='••••••••'
-                    value={form.password}
-                    onChange={handleChange}
-                    required
-                  />
+                  <Box position='relative' width='full'>
+                    <Input
+                      name='password'
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder='••••••••'
+                      value={form.password}
+                      onChange={handleChange}
+                      pr='3rem'
+                      required
+                    />
+                    <IconButton
+                      aria-label={
+                        showPassword ? 'Hide password' : 'Show password'
+                      }
+                      position='absolute'
+                      top='50%'
+                      right={1}
+                      transform='translateY(-50%)'
+                      size='sm'
+                      variant='ghost'
+                      onClick={() => setShowPassword((current) => !current)}
+                    >
+                      {showPassword ? <LuEyeOff /> : <LuEye />}
+                    </IconButton>
+                  </Box>
                 </Field.Root>
 
                 <Field.Root>
                   <Field.Label>Retype Password</Field.Label>
-                  <Input
-                    name='confirmPassword'
-                    type='password'
-                    placeholder='••••••••'
-                    value={form.confirmPassword}
-                    onChange={handleChange}
-                    required
-                  />
+                  <Box position='relative' width='full'>
+                    <Input
+                      name='confirmPassword'
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      placeholder='••••••••'
+                      value={form.confirmPassword}
+                      onChange={handleChange}
+                      pr='3rem'
+                      required
+                    />
+                    <IconButton
+                      aria-label={
+                        showConfirmPassword
+                          ? 'Hide retype password'
+                          : 'Show retype password'
+                      }
+                      position='absolute'
+                      top='50%'
+                      right={1}
+                      transform='translateY(-50%)'
+                      size='sm'
+                      variant='ghost'
+                      onClick={() =>
+                        setShowConfirmPassword((current) => !current)
+                      }
+                    >
+                      {showConfirmPassword ? <LuEyeOff /> : <LuEye />}
+                    </IconButton>
+                  </Box>
                 </Field.Root>
               </Stack>
             </Card.Body>

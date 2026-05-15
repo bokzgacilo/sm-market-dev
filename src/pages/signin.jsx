@@ -1,39 +1,128 @@
 import {
+  Box,
   Button,
   Card,
   Field,
   Heading,
+  IconButton,
   Input,
   SimpleGrid,
-  Spinner,
   Stack,
   Text,
-  Separator
 } from '@chakra-ui/react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import CustomBreadcrumb from '@/components/custom/CustomBreadcrumb';
-import { useAuth } from '@/context/AuthContext';
+import { LuEye, LuEyeOff } from 'react-icons/lu';
 import { supabase } from '@/helper/supabase';
 
 export default function Signin() {
   const router = useRouter();
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
-  const [auth, setAuth] = useState(null)
+  const [passwordReset, setPasswordReset] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
 
   useEffect(() => {
-    if (!localStorage.getItem("auth_id")) return;
-  }, [])
+    if (!localStorage.getItem('auth_id')) return;
+  }, []);
 
   // if (auth) {
   //   router.replace("/profile");
   //   return;
   // }
+
+  const handleSignIn = async () => {
+    setLoading(true);
+    try {
+      const { data: customer, error: customerError } = await supabase
+        .from('users')
+        .select('flag_delete')
+        .eq('email', form.email)
+        .maybeSingle();
+
+      if (customerError) throw customerError;
+
+      if (customer?.flag_delete) {
+        alert(
+          'Your account has been disabled or deleted.\n\nPlease contact the administrator to recover or reactivate your account.',
+        );
+        return;
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: form.email,
+        password: form.password,
+      });
+
+      if (error) throw error;
+
+      const user = data.user;
+      if (user) {
+        localStorage.setItem('auth_id', user.id);
+        alert('Login successful!');
+        router.replace('/profile');
+      }
+    } catch (err) {
+      console.error(err.message);
+      alert('Login failed. Please check your email and password.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePasswordReset = async () => {
+    setLoading(true);
+
+    const { data: customer, error: customerError } = await supabase
+      .from('users')
+      .select('flag_delete')
+      .eq('email', form.email)
+      .maybeSingle();
+
+    if (customerError) {
+      alert(customerError.message);
+      setLoading(false);
+      return;
+    }
+
+    if (!customer) {
+      alert('No account found with this email address.');
+      setLoading(false);
+      return;
+    }
+
+    if (customer.flag_delete) {
+      alert(
+        'Your account has been disabled or deleted.\n\nPlease contact the administrator to recover or reactivate your account.',
+      );
+      setLoading(false);
+      return;
+    }
+
+    const redirectTo =
+      typeof window !== 'undefined'
+        ? `${window.location.origin}/reset-password`
+        : undefined;
+    const { error } = await supabase.auth.resetPasswordForEmail(
+      form.email,
+      redirectTo ? { redirectTo } : undefined,
+    );
+
+    setLoading(false);
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    alert('Password reset email sent successfully.');
+    setPasswordReset(false);
+  };
 
   return (
     <>
@@ -44,12 +133,17 @@ export default function Signin() {
         <link rel='icon' href='/favicon.ico' />
       </Head>
 
-      <Stack gap={4} p={4} mt={{ base: 8, lg: 4 }} alignItems="center">
+      <Stack gap={4} p={4} mt={{ base: 8, lg: 4 }} alignItems='center'>
         <Heading size='3xl' color='#0030FF'>
-          Welcome Back!
+          {passwordReset ? 'Forgot Password' : 'Welcome Back!'}
         </Heading>
 
-        <SimpleGrid columns={{ base: 1, md: 1 }} justif gap={6} width={{ base: "100%", md: "50%" }}>
+        <SimpleGrid
+          columns={{ base: 1, md: 1 }}
+          justif
+          gap={6}
+          width={{ base: '100%', md: '50%' }}
+        >
           <Card.Root>
             <Card.Body>
               <Stack gap={4}>
@@ -63,49 +157,58 @@ export default function Signin() {
                     onChange={handleChange}
                     required
                   />
+                  {passwordReset ? (
+                    <Field.HelperText>
+                      Enter your email address to receive a reset password link.
+                    </Field.HelperText>
+                  ) : null}
                 </Field.Root>
 
-                <Field.Root>
-                  <Field.Label>Password</Field.Label>
-                  <Input
-                    name='password'
-                    type='password'
-                    placeholder='••••••••'
-                    value={form.password}
-                    onChange={handleChange}
-                    required
-                  />
-                </Field.Root>
+                {!passwordReset ? (
+                  <Field.Root>
+                    <Field.Label>Password</Field.Label>
+                    <Box position='relative' width='full'>
+                      <Input
+                        name='password'
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder='••••••••'
+                        value={form.password}
+                        onChange={handleChange}
+                        pr='3rem'
+                        required
+                      />
+                      <IconButton
+                        aria-label={
+                          showPassword ? 'Hide password' : 'Show password'
+                        }
+                        position='absolute'
+                        top='50%'
+                        right={1}
+                        transform='translateY(-50%)'
+                        size='sm'
+                        variant='ghost'
+                        onClick={() => setShowPassword((current) => !current)}
+                      >
+                        {showPassword ? <LuEyeOff /> : <LuEye />}
+                      </IconButton>
+                    </Box>
+                  </Field.Root>
+                ) : null}
 
                 <Button
                   colorPalette='blue'
                   size='xl'
                   loading={loading}
-                  onClick={async () => {
-                    setLoading(true);
-                    try {
-                      const { data, error } = await supabase.auth.signInWithPassword({
-                        email: form.email,
-                        password: form.password,
-                      });
-
-                      if (error) throw error;
-
-                      const user = data.user;
-                      if (user) {
-                        localStorage.setItem("auth_id", user.id);
-                        alert("Login successful!");
-                        router.replace("/profile"); // redirect to profile
-                      }
-                    } catch (err) {
-                      console.error(err.message);
-                      alert("Login failed. Please check your email and password.");
-                    } finally {
-                      setLoading(false);
-                    }
-                  }}
+                  onClick={passwordReset ? handlePasswordReset : handleSignIn}
                 >
-                  Sign In
+                  {passwordReset ? 'Submit' : 'Sign In'}
+                </Button>
+                <Button
+                  variant='outline'
+                  disabled={loading}
+                  onClick={() => setPasswordReset((current) => !current)}
+                >
+                  {passwordReset ? 'Cancel' : 'Forgot Password?'}
                 </Button>
                 {/* <Separator />
                 <Button variant="outline" onClick={async () => {

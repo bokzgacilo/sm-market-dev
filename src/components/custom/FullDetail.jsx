@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/helper/supabase";
 import OrderItem from "./OrderItem";
 import axios from "axios";
-import { LuBox, LuCheck, LuClipboard, LuTruck } from "react-icons/lu";
+import { LuBox, LuCheck, LuClipboard, LuTrash, LuTruck } from "react-icons/lu";
 
 const steps = [
   {
@@ -25,7 +25,7 @@ const steps = [
   },
 ]
 
-export default function FullDetail({ order: orderData, cart }) {
+export default function FullDetail({ userRole, order: orderData, cart }) {
   const [order, setOrder] = useState([])
   const [delivery, setDelivery] = useState([])
   const [loading, setLoading] = useState(true)
@@ -126,44 +126,39 @@ export default function FullDetail({ order: orderData, cart }) {
                   <Text>{order.shipping_address.branch_name} {order.shipping_address.branch_address}</Text>
               }
             </Field.Root>
+
             {
-              delivery.length === 0 ?
-                <Stack>
-                  <Text>You need to pay first before the merchant can process your order.</Text>
-                  <Button bg="blue.600" rounded="full" onClick={() => handleCompletePayment(order.checkout_id)}>Pay Now</Button>
-                </Stack>
-                :
-                <>
-                  <Field.Root>
-                    <Field.Label>Status</Field.Label>
-                  </Field.Root>
+              <>
+                <Field.Root>
+                  <Field.Label>Status</Field.Label>
+                </Field.Root>
 
-                  <Steps.Root step={
-                    delivery.status === "pending" ? 0 :
-                      delivery.status === "processing" ? 1 :
-                        delivery.status === "out_for_delivery" ? 2 :
-                          delivery.status === "completed" ? 3 :
-                            0
-                  } count={4} size="sm" colorPalette="green">
-                    <Steps.List>
-                      {steps.map((step, index) => (
-                        <Steps.Item key={index} index={index}>
-                          <Steps.Indicator>
-                            <Steps.Status incomplete={step.icon} complete={step.icon} />
-                          </Steps.Indicator>
-                          <Steps.Separator />
-                        </Steps.Item>
-                      ))}
-                    </Steps.List>
-
+                <Steps.Root step={
+                  delivery.status === "pending" ? 0 :
+                    delivery.status === "processing" ? 1 :
+                      delivery.status === "out_for_delivery" ? 2 :
+                        delivery.status === "completed" ? 3 :
+                          0
+                } count={4} size="sm" colorPalette="green">
+                  <Steps.List>
                     {steps.map((step, index) => (
-                      <Steps.Content key={index} index={index}>
-                        {order.shipping_method === "pickup" && delivery.status === "out_for_delivery" ? "Ready for pickup" : step.description}
-                      </Steps.Content>
+                      <Steps.Item key={index} index={index}>
+                        <Steps.Indicator>
+                          <Steps.Status incomplete={step.icon} complete={step.icon} />
+                        </Steps.Indicator>
+                        <Steps.Separator />
+                      </Steps.Item>
                     ))}
-                    <Steps.CompletedContent>All steps are complete!</Steps.CompletedContent>
-                  </Steps.Root>
-                </>
+                  </Steps.List>
+
+                  {steps.map((step, index) => (
+                    <Steps.Content key={index} index={index}>
+                      {order.shipping_method === "pickup" && delivery.status === "out_for_delivery" ? "Ready for pickup" : step.description}
+                    </Steps.Content>
+                  ))}
+                  <Steps.CompletedContent>All steps are complete!</Steps.CompletedContent>
+                </Steps.Root>
+              </>
             }
 
             {(delivery.status === "out_for_delivery" || delivery.status === "completed") && order.shipping_method === "delivery" &&
@@ -180,6 +175,36 @@ export default function FullDetail({ order: orderData, cart }) {
                 </Field.Root>
               </Stack>
             }
+            {userRole === "SUPERADMIN" || order.status === "PENDING" ?
+              <Stack>
+                <Text>You need to pay first before the merchant can process your order.</Text>
+                <Button
+                  bg="blue.600" rounded="full" onClick={() => handleCompletePayment(order.checkout_id)}>Pay Now</Button>
+              </Stack>
+              :
+              <Button
+                disabled={order.flag_delete}
+                onClick={async () => {
+                  const { error } = await supabase
+                    .from("orders")
+                    .update({ flag_delete: true })
+                    .eq("reference_number", order.reference_number);
+
+                  if (error) {
+                    console.error(error);
+                    return;
+                  }
+
+                  alert("Order deleted successfully.");
+                  window.location.reload();
+                }}
+                colorPalette="red"
+                variant="outline"
+              >
+                {order.flag_delete ? 'Deleted' : 'Delete Order'}
+              </Button>
+            }
+
           </Stack>
           <Stack
             gap={4}

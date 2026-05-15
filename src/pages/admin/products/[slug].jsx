@@ -17,11 +17,13 @@ import {
   Table,
   Textarea,
 } from '@chakra-ui/react';
+import Head from 'next/head';
+import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { LuBoxes, LuEye, LuPen } from 'react-icons/lu';
+import { LuBoxes, LuEye, LuPen, LuRefreshCcw, LuTrash } from 'react-icons/lu';
 import ManageInventory from '@/components/custom/ManageInventory';
 import { supabase } from '@/helper/supabase';
-import { useRouter } from 'next/router';
+import { useAdmin } from '../layout';
 
 export default function ProductDetails({ slug, close }) {
   const [product, setProduct] = useState(null);
@@ -29,20 +31,34 @@ export default function ProductDetails({ slug, close }) {
   const [showInventoryDialog, setShowInventoryDialog] = useState(false);
   const [newInventory, setNewInventory] = useState({});
   const router = useRouter();
+  const productSlug = slug || router.query.slug;
+  const { userRole } = useAdmin();
+  const canManageDeletedProducts = userRole === 'ITADMIN';
+  const canModifyProducts = userRole === 'SUPERADMIN';
+  const closeDetails = () => {
+    if (close) {
+      close();
+      return;
+    }
+
+    router.push('/admin/products');
+  };
 
   // Fetch product
   useEffect(() => {
     const loadProduct = async () => {
+      if (!productSlug) return;
+
       const { data } = await supabase
         .from('products')
         .select('*')
-        .eq('slug', slug)
+        .eq('slug', productSlug)
         .single();
 
       setProduct(data);
     };
     loadProduct();
-  }, [slug]);
+  }, [productSlug]);
 
   // Fetch inventory once product exists
   useEffect(() => {
@@ -77,7 +93,7 @@ export default function ProductDetails({ slug, close }) {
         },
         (payload) => {
           setInventory(payload.new);
-        }
+        },
       )
       .subscribe();
 
@@ -89,6 +105,16 @@ export default function ProductDetails({ slug, close }) {
   if (!product) return null;
 
   const toggleVisibility = async () => {
+    if (!canModifyProducts) {
+      alert('Only SUPERADMIN can toggle product visibility.');
+      return;
+    }
+
+    if (product.flag_delete) {
+      alert('Recover this product before changing visibility.');
+      return;
+    }
+
     const updatedState = !product.isActive;
 
     const { data } = await supabase
@@ -104,18 +130,28 @@ export default function ProductDetails({ slug, close }) {
   };
 
   const handleSaveInventory = async () => {
+    if (!canModifyProducts) {
+      alert('Only SUPERADMIN can change product inventory.');
+      return;
+    }
+
+    if (product.flag_delete) {
+      alert('Recover this product before changing inventory.');
+      return;
+    }
+
     const updatedInventory = {
       aura: {
-        available: parseInt(newInventory.aura?.available) || 0,
-        sold: parseInt(newInventory.aura?.sold) || 0,
+        available: parseInt(newInventory.aura?.available, 10) || 0,
+        sold: parseInt(newInventory.aura?.sold, 10) || 0,
       },
       makati: {
-        available: parseInt(newInventory.makati?.available) || 0,
-        sold: parseInt(newInventory.makati?.sold) || 0,
+        available: parseInt(newInventory.makati?.available, 10) || 0,
+        sold: parseInt(newInventory.makati?.sold, 10) || 0,
       },
       sta_mesa: {
-        available: parseInt(newInventory.sta_mesa?.available) || 0,
-        sold: parseInt(newInventory.sta_mesa?.sold) || 0,
+        available: parseInt(newInventory.sta_mesa?.available, 10) || 0,
+        sold: parseInt(newInventory.sta_mesa?.sold, 10) || 0,
       },
     };
 
@@ -129,7 +165,7 @@ export default function ProductDetails({ slug, close }) {
       alert('Inventory updated successfully');
       setShowInventoryDialog(false);
     } else {
-      alert('Error updating inventory: ' + error.message);
+      alert(`Error updating inventory: ${error.message}`);
     }
   };
 
@@ -139,176 +175,264 @@ export default function ProductDetails({ slug, close }) {
     { name: 'Sta Mesa', key: 'sta_mesa' },
   ];
 
+  const deleteProduct = async () => {
+    if (!canManageDeletedProducts) {
+      alert('Only ITADMIN can delete products.');
+      return;
+    }
+
+    const { error } = await supabase
+      .from('products')
+      .update({ flag_delete: true })
+      .eq('id', product.id);
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    alert('Product deleted successfully.');
+    closeDetails();
+  };
+
+  const recoverProduct = async () => {
+    if (!canManageDeletedProducts) {
+      alert('Only ITADMIN can recover deleted products.');
+      return;
+    }
+
+    const { error } = await supabase
+      .from('products')
+      .update({ flag_delete: false })
+      .eq('id', product.id);
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    alert('Product recovered successfully.');
+    closeDetails();
+  };
+
   return (
-    <Stack>
-      {/* ACTIONS */}
-      <Flex p={4} bg='#fff' rounded='md' gap={2}>
-        <Button size='sm' colorPalette='blue' onClick={toggleVisibility}>
-          <LuEye />
-          Toggle Visibility
-        </Button>
+    <>
+      <Head>
+        <title>Product Details | Admin | SM Market</title>
+      </Head>
+      <Stack>
+        {/* ACTIONS */}
+        <Flex p={4} bg='#fff' rounded='md' gap={2}>
+          <Button
+            display={canModifyProducts ? 'flex' : 'none'}
+            disabled={product.flag_delete}
+            size='xs'
+            colorPalette='blue'
+            onClick={toggleVisibility}
+          >
+            <LuEye />
+            Toggle Visibility
+          </Button>
 
-        <Button
-          size='sm'
-          variant='outline'
-          onClick={() => setShowInventoryDialog(true)}
-        >
-          <LuBoxes />
-          Inventory
-        </Button>
-        <Button
-          size='sm'
-          variant='outline'
-          onClick={() => router.push(`/admin/products/edit/${product.id}`)}
-        >
-          <LuPen />
-          Edit
-        </Button>
-      </Flex>
+          <Button
+            display={canModifyProducts ? 'flex' : 'none'}
+            disabled={product.flag_delete}
+            size='xs'
+            variant='outline'
+            onClick={() => setShowInventoryDialog(true)}
+          >
+            <LuBoxes />
+            Inventory
+          </Button>
+          <Button
+            display={canModifyProducts ? 'flex' : 'none'}
+            disabled={product.flag_delete}
+            size='xs'
+            variant='outline'
+            onClick={() => router.push(`/admin/products/edit/${product.id}`)}
+          >
+            <LuPen />
+            Edit
+          </Button>
+          {product.flag_delete ? (
+            <Button
+              display={canManageDeletedProducts ? 'flex' : 'none'}
+              colorPalette='green'
+              size='xs'
+              variant='outline'
+              onClick={recoverProduct}
+            >
+              <LuRefreshCcw />
+              Recover
+            </Button>
+          ) : (
+            <Button
+              display={canManageDeletedProducts ? 'flex' : 'none'}
+              colorPalette='red'
+              size='xs'
+              variant='outline'
+              onClick={deleteProduct}
+            >
+              <LuTrash />
+              Delete
+            </Button>
+          )}
+        </Flex>
 
-      {/* PRODUCT CARD */}
-      <Card.Root>
-        <Card.Header p={2}>
-          <HStack alignItems='center' justifyContent='space-between'>
-            <Card.Title>
-              {product.title}{' '}
-              <Badge colorPalette={product.isActive ? 'green' : 'yellow'}>
-                {product.isActive ? 'Active' : 'Archived'}
-              </Badge>
-            </Card.Title>
-            <CloseButton
-              onClick={() => {
-                setProduct(null);
-                close();
-              }}
-            />
-          </HStack>
-        </Card.Header>
+        {/* PRODUCT CARD */}
+        <Card.Root>
+          <Card.Header p={2}>
+            <HStack alignItems='center' justifyContent='space-between'>
+              <Card.Title>
+                {product.title}{' '}
+                <Badge colorPalette={product.isActive ? 'green' : 'yellow'}>
+                  {product.isActive ? 'Active' : 'Archived'}
+                </Badge>
+                {product.flag_delete ? (
+                  <Badge ml={2} colorPalette='red'>
+                    Deleted
+                  </Badge>
+                ) : null}
+              </Card.Title>
+              <CloseButton
+                onClick={() => {
+                  setProduct(null);
+                  closeDetails();
+                }}
+              />
+            </HStack>
+          </Card.Header>
 
-        <Separator />
+          <Separator />
 
-        <Card.Body p={0}>
-          <Stack gap={4} p={0} overflowY='auto' height='70dvh'>
-            {/* INVENTORY TABLE */}
-            <Stack>
-              <Table.Root size='sm' interactive>
-                <Table.Header>
-                  <Table.Row>
-                    <Table.ColumnHeader>Branch</Table.ColumnHeader>
-                    <Table.ColumnHeader>Available</Table.ColumnHeader>
-                    <Table.ColumnHeader>Sold</Table.ColumnHeader>
-                  </Table.Row>
-                </Table.Header>
+          <Card.Body p={0}>
+            <Stack gap={4} p={0} overflowY='auto' height='70dvh'>
+              {/* INVENTORY TABLE */}
+              <Stack>
+                <Table.Root size='sm' interactive>
+                  <Table.Header>
+                    <Table.Row>
+                      <Table.ColumnHeader>Branch</Table.ColumnHeader>
+                      <Table.ColumnHeader>Available</Table.ColumnHeader>
+                      <Table.ColumnHeader>Sold</Table.ColumnHeader>
+                    </Table.Row>
+                  </Table.Header>
 
-                <Table.Body>
-                  {inventory &&
-                    branches.map((b) => (
-                      <Table.Row key={b.key}>
-                        <Table.Cell>{b.name}</Table.Cell>
-                        <Table.Cell>
-                          {inventory[b.key]?.available || 0}
-                        </Table.Cell>
-                        <Table.Cell>{inventory[b.key]?.sold || 0}</Table.Cell>
-                      </Table.Row>
-                    ))}
-                </Table.Body>
-              </Table.Root>
+                  <Table.Body>
+                    {inventory &&
+                      branches.map((b) => (
+                        <Table.Row key={b.key}>
+                          <Table.Cell>{b.name}</Table.Cell>
+                          <Table.Cell>
+                            {inventory[b.key]?.available || 0}
+                          </Table.Cell>
+                          <Table.Cell>{inventory[b.key]?.sold || 0}</Table.Cell>
+                        </Table.Row>
+                      ))}
+                  </Table.Body>
+                </Table.Root>
+              </Stack>
+
+              {/* DETAILS */}
+              <Stack gap={4} px={4}>
+                <Heading size='md'>Details</Heading>
+
+                <Field.Root>
+                  <Field.Label>Name</Field.Label>
+                  <Input value={product.title} readOnly />
+                </Field.Root>
+
+                <HStack gap={4}>
+                  <Field.Root>
+                    <Field.Label>Price</Field.Label>
+                    <Input value={product.price} readOnly />
+                  </Field.Root>
+
+                  <Field.Root>
+                    <Field.Label>Compare At</Field.Label>
+                    <Input value={product.compare_at_price} readOnly />
+                  </Field.Root>
+                </HStack>
+
+                <HStack gap={4}>
+                  <Field.Root>
+                    <Field.Label>Category</Field.Label>
+                    <Input value={product.category} readOnly />
+                  </Field.Root>
+
+                  <Field.Root>
+                    <Field.Label>Subcategory</Field.Label>
+                    <Input value={product.subcategory} readOnly />
+                  </Field.Root>
+                </HStack>
+
+                <Field.Root>
+                  <Field.Label>Description</Field.Label>
+                  <Textarea value={product.description} readOnly />
+                </Field.Root>
+
+                {/* MEDIA */}
+                <Heading size='md'>Media</Heading>
+                <SimpleGrid columns={3} gap={4}>
+                  {product.images?.map((image) => (
+                    <Image
+                      key={image}
+                      borderRadius={4}
+                      height='200px'
+                      w='full'
+                      objectFit='contain'
+                      border='1px solid lightgray'
+                      src={image}
+                    />
+                  ))}
+                </SimpleGrid>
+              </Stack>
             </Stack>
+          </Card.Body>
+        </Card.Root>
 
-            {/* DETAILS */}
-            <Stack gap={4} px={4}>
-              <Heading size='md'>Details</Heading>
+        {/* INVENTORY DIALOG */}
+        <Dialog.Root
+          open={showInventoryDialog}
+          onOpenChange={(e) => setShowInventoryDialog(e.open)}
+        >
+          <Portal>
+            <Dialog.Backdrop />
+            <Dialog.Positioner>
+              <Dialog.Content>
+                <Dialog.Header p={4}>
+                  <Dialog.Title>Manage Inventory</Dialog.Title>
+                </Dialog.Header>
 
-              <Field.Root>
-                <Field.Label>Name</Field.Label>
-                <Input value={product.title} readOnly />
-              </Field.Root>
-
-              <HStack gap={4}>
-                <Field.Root>
-                  <Field.Label>Price</Field.Label>
-                  <Input value={product.price} readOnly />
-                </Field.Root>
-
-                <Field.Root>
-                  <Field.Label>Compare At</Field.Label>
-                  <Input value={product.compare_at_price} readOnly />
-                </Field.Root>
-              </HStack>
-
-              <HStack gap={4}>
-                <Field.Root>
-                  <Field.Label>Category</Field.Label>
-                  <Input value={product.category} readOnly />
-                </Field.Root>
-
-                <Field.Root>
-                  <Field.Label>Subcategory</Field.Label>
-                  <Input value={product.subcategory} readOnly />
-                </Field.Root>
-              </HStack>
-
-              <Field.Root>
-                <Field.Label>Description</Field.Label>
-                <Textarea value={product.description} readOnly />
-              </Field.Root>
-
-              {/* MEDIA */}
-              <Heading size='md'>Media</Heading>
-              <SimpleGrid columns={3} gap={4}>
-                {product.images?.map((image) => (
-                  <Image
-                    key={image}
-                    borderRadius={4}
-                    height='200px'
-                    w='full'
-                    objectFit='contain'
-                    border='1px solid lightgray'
-                    src={image}
+                <Dialog.Body p={0}>
+                  <ManageInventory
+                    update={setNewInventory}
+                    product_id={product.id}
                   />
-                ))}
-              </SimpleGrid>
-            </Stack>
-          </Stack>
-        </Card.Body>
-      </Card.Root>
+                </Dialog.Body>
 
-      {/* INVENTORY DIALOG */}
-      <Dialog.Root
-        open={showInventoryDialog}
-        onOpenChange={(e) => setShowInventoryDialog(e.open)}
-      >
-        <Portal>
-          <Dialog.Backdrop />
-          <Dialog.Positioner>
-            <Dialog.Content>
-              <Dialog.Header p={4}>
-                <Dialog.Title>Manage Inventory</Dialog.Title>
-              </Dialog.Header>
-
-              <Dialog.Body p={0}>
-                <ManageInventory
-                  update={setNewInventory}
-                  product_id={product.id}
-                />
-              </Dialog.Body>
-
-              <Dialog.Footer p={4}>
-                <Button
-                  size="sm"
-                  variant='outline'
-                  onClick={() => setShowInventoryDialog(false)}
-                >
-                  Cancel
-                </Button>
-                <Button size="sm" colorPalette='blue' onClick={handleSaveInventory}>
-                  Save
-                </Button>
-              </Dialog.Footer>
-            </Dialog.Content>
-          </Dialog.Positioner>
-        </Portal>
-      </Dialog.Root>
-    </Stack>
+                <Dialog.Footer p={4}>
+                  <Button
+                    size='sm'
+                    variant='outline'
+                    onClick={() => setShowInventoryDialog(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    size='sm'
+                    colorPalette='blue'
+                    disabled={!canModifyProducts || product.flag_delete}
+                    onClick={handleSaveInventory}
+                  >
+                    Save
+                  </Button>
+                </Dialog.Footer>
+              </Dialog.Content>
+            </Dialog.Positioner>
+          </Portal>
+        </Dialog.Root>
+      </Stack>
+    </>
   );
 }

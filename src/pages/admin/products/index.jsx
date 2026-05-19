@@ -165,7 +165,7 @@ export default function ProductIndex() {
                 </Tabs.List>
               </Tabs.Root>
               <Stack gap={4} px={0} py={4}>
-                <Table.Root interactive>
+                <Table.Root interactive striped size='sm'>
                   <Table.Header>
                     <Table.Row>
                       <Table.ColumnHeader w='10%'>Display</Table.ColumnHeader>

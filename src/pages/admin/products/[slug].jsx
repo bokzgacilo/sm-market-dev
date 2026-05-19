@@ -309,7 +309,7 @@ export default function ProductDetails({ slug, close }) {
             <Stack gap={4} p={0} overflowY='auto' height='70dvh'>
               {/* INVENTORY TABLE */}
               <Stack>
-                <Table.Root size='sm' interactive>
+                <Table.Root interactive striped size='sm'>
                   <Table.Header>
                     <Table.Row>
                       <Table.ColumnHeader>Branch</Table.ColumnHeader>

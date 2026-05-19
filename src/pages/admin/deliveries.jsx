@@ -435,7 +435,7 @@ export default function Deliveries() {
                 </Tabs.Trigger>
               </Tabs.List>
             </Tabs.Root>
-            <Table.Root striped size='sm'>
+            <Table.Root interactive striped size='sm'>
               <Table.Header>
                 <Table.Row>
                   <Table.ColumnHeader>Reference Number</Table.ColumnHeader>

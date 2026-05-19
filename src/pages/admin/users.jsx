@@ -544,7 +544,9 @@ export default function Users() {
         <Card.Root>
           <HStack p={4} alignItems='center' justifyContent='space-between'>
             <Heading>System Users</Heading>
-            <Button size='xs' onClick={() => setOpen(true)}>
+            <Button
+              display={canManageAccounts ? 'flex' : 'none'}
+              size='xs' onClick={() => setOpen(true)}>
               <LuPlus />
               Add User
             </Button>
@@ -566,8 +568,7 @@ export default function Users() {
                 </Tabs.Trigger>
               </Tabs.List>
             </Tabs.Root>
-            <Table.Root interactive striped>
-              <Table.Caption>This is list of registered users</Table.Caption>
+            <Table.Root interactive striped size='sm'>
               <Table.Header>
                 <Table.Row>
                   <Table.ColumnHeader>Name</Table.ColumnHeader>

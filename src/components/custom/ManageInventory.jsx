@@ -1,6 +1,6 @@
-import { supabase } from '@/helper/supabase';
-import { Stack, Field, Input, Button, HStack, Text, Heading, Table, NumberInput } from '@chakra-ui/react';
+import { NumberInput, Stack, Table, Text } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
+import { supabase } from '@/helper/supabase';
 
 export default function ManageInventory({ product_id, update }) {
   const [inventory, setInventory] = useState(null);
@@ -42,27 +42,22 @@ export default function ManageInventory({ product_id, update }) {
   }, [inventory, update]);
 
   const handleInventoryChange = (location, field, value) => {
-    setInventory(prev => ({
+    setInventory((prev) => ({
       ...prev,
       [location]: {
         ...prev[location],
-        [field]: value
-      }
+        [field]: value,
+      },
     }));
-
-
   };
 
   if (loading) return <Text>Loading inventory...</Text>;
-  if (error) return <Text color="red">{error}</Text>;
+  if (error) return <Text color='red'>{error}</Text>;
   if (!inventory) return <Text>No inventory found</Text>;
-  const locations = ["aura", "makati", "sta_mesa"];
+  const locations = ['aura', 'makati', 'sta_mesa'];
   return (
     <Stack gap={4}>
-      <Table.Root
-        size="sm"
-        interactive
-      >
+      <Table.Root interactive striped size='sm'>
         <Table.Header>
           <Table.Row>
             <Table.ColumnHeader>Branch</Table.ColumnHeader>
@@ -71,15 +66,17 @@ export default function ManageInventory({ product_id, update }) {
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {locations.map(loc => (
+          {locations.map((loc) => (
             <Table.Row key={loc}>
               <Table.Cell>{loc.toLocaleUpperCase()}</Table.Cell>
               <Table.Cell>
                 <NumberInput.Root
-                  size="sm"
-                  variant="outline"
+                  size='sm'
+                  variant='outline'
                   value={inventory[loc].available}
-                  onValueChange={(e) => handleInventoryChange(loc, 'available', e.value)}
+                  onValueChange={(e) =>
+                    handleInventoryChange(loc, 'available', e.value)
+                  }
                   min={0}
                 >
                   <NumberInput.Control />

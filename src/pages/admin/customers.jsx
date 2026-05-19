@@ -544,7 +544,7 @@ export default function Customers() {
                 </Tabs.Trigger>
               </Tabs.List>
             </Tabs.Root>
-            <Table.Root interactive showColumnBorder>
+            <Table.Root interactive striped size='sm'>
               <Table.Header>
                 <Table.Row>
                   <Table.ColumnHeader>Name</Table.ColumnHeader>

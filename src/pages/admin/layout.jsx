@@ -1,10 +1,13 @@
 import {
   Badge,
   Button,
+  CloseButton,
   Container,
+  Dialog,
   Flex,
   Icon,
   Image,
+  Portal,
   Separator,
   SimpleGrid,
   Stack,
@@ -37,7 +40,40 @@ const getRoleIndicator = (role) => {
     return 'IT ADMIN';
   }
 
-  return 'ADMINISTRATOR';
+  return 'ADMIN';
+};
+
+const permissionProfiles = {
+  ITADMIN: {
+    title: 'IT ADMIN Permissions',
+    permissions: [
+      'Manage system users',
+      'Edit customer accounts',
+      'Reset account passwords',
+      'Deactivate and recover accounts',
+      'Delete and recover products',
+      'View orders, sales, and deliveries',
+    ],
+  },
+  ADMIN: {
+    title: 'ADMIN Permissions',
+    permissions: [
+      'Manage products and inventory',
+      'Toggle product visibility',
+      'Edit product details',
+      'Process orders and sales',
+      'Manage delivery status',
+      'View customers and system users',
+    ],
+  },
+};
+
+const getPermissionProfile = (role) => {
+  if (role === 'ITADMIN') {
+    return permissionProfiles.ITADMIN;
+  }
+
+  return permissionProfiles.ADMIN;
 };
 
 export default function AdminLayout({ children }) {
@@ -52,8 +88,10 @@ export default function AdminLayout({ children }) {
   ];
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [userRole, setUserRole] = useState(null);
+  const [permissionsOpen, setPermissionsOpen] = useState(false);
   const pathname = usePathname();
   const roleIndicator = getRoleIndicator(userRole);
+  const permissionProfile = getPermissionProfile(userRole);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -91,6 +129,38 @@ export default function AdminLayout({ children }) {
 
   return (
     <Container p={0} maxWidth='full' bg='gray.200'>
+      <Dialog.Root
+        open={permissionsOpen}
+        onOpenChange={(e) => setPermissionsOpen(e.open)}
+        size='md'
+      >
+        <Portal>
+          <Dialog.Backdrop />
+          <Dialog.Positioner>
+            <Dialog.Content>
+              <Dialog.Header>
+                <Dialog.Title>{permissionProfile.title}</Dialog.Title>
+              </Dialog.Header>
+              <Dialog.Body>
+                <Stack gap={3}>
+                  <Text color='fg.muted'>Signed in as {roleIndicator}</Text>
+                  <Stack as='ul' pl={5} gap={2}>
+                    {permissionProfile.permissions.map((permission) => (
+                      <Text as='li' key={permission}>
+                        {permission}
+                      </Text>
+                    ))}
+                  </Stack>
+                </Stack>
+              </Dialog.Body>
+              <Dialog.CloseTrigger asChild>
+                <CloseButton size='sm' />
+              </Dialog.CloseTrigger>
+            </Dialog.Content>
+          </Dialog.Positioner>
+        </Portal>
+      </Dialog.Root>
+
       <SimpleGrid templateColumns='350px 1fr' height='100dvh' gap={4}>
         <Stack bg='bg' gap={0} pb={4}>
           <Stack mt={4} align='center' gap={4}>
@@ -133,7 +203,7 @@ export default function AdminLayout({ children }) {
             <Badge size='lg' mt='auto' variant='solid' colorPalette='green'>
               Signed in as {roleIndicator}
             </Badge>
-            <Button variant='outline'>
+            <Button variant='outline' onClick={() => setPermissionsOpen(true)}>
               My Permissions
               <LuMessageCircleQuestion />
             </Button>

@@ -159,7 +159,7 @@ export default function Orders() {
                 </Tabs.Trigger>
               </Tabs.List>
             </Tabs.Root>
-            <Table.Root striped>
+            <Table.Root interactive striped size='sm'>
               <Table.Header>
                 <Table.Row>
                   <Table.ColumnHeader>Reference Number</Table.ColumnHeader>

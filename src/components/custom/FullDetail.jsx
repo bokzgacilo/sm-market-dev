@@ -175,13 +175,20 @@ export default function FullDetail({ userRole, order: orderData, cart }) {
                 </Field.Root>
               </Stack>
             }
-            {userRole === "SUPERADMIN" || order.status === "PENDING" ?
+            {order.status === "pending" && (
               <Stack>
                 <Text>You need to pay first before the merchant can process your order.</Text>
                 <Button
-                  bg="blue.600" rounded="full" onClick={() => handleCompletePayment(order.checkout_id)}>Pay Now</Button>
+                  bg="blue.600"
+                  rounded="full"
+                  onClick={() => handleCompletePayment(order.checkout_id)}
+                >
+                  Pay Now
+                </Button>
               </Stack>
-              :
+            )}
+
+            {userRole === "SUPERADMIN" && (
               <Button
                 disabled={order.flag_delete}
                 onClick={async () => {
@@ -201,10 +208,9 @@ export default function FullDetail({ userRole, order: orderData, cart }) {
                 colorPalette="red"
                 variant="outline"
               >
-                {order.flag_delete ? 'Deleted' : 'Delete Order'}
+                {order.flag_delete ? "Deleted" : "Delete Order"}
               </Button>
-            }
-
+            )}
           </Stack>
           <Stack
             gap={4}

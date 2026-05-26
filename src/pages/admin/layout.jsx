@@ -81,7 +81,7 @@ export default function AdminLayout({ children }) {
   const navItems = [
     { href: '/', label: 'Go Shopping', icon: LuShoppingBag },
     { href: '/admin/customers', label: 'Customers', icon: LuUsers },
-    { href: '/admin/users', label: 'Users', icon: LuUsers },
+    { href: '/admin/users', label: 'Administrators', icon: LuUsers },
     { href: '/admin/deliveries', label: 'Deliveries', icon: LuTruck },
     { href: '/admin/orders', label: 'Orders and Sales', icon: LuClipboard },
     { href: '/admin/products', label: 'Products', icon: LuBox },

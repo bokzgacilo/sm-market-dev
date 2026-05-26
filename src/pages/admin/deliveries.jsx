@@ -431,7 +431,7 @@ export default function Deliveries() {
               <Tabs.List>
                 <Tabs.Trigger value='active'>Active Deliveries</Tabs.Trigger>
                 <Tabs.Trigger value='deleted'>
-                  Deactivated / Deleted Deliveries
+                  Archived Deliveries
                 </Tabs.Trigger>
               </Tabs.List>
             </Tabs.Root>

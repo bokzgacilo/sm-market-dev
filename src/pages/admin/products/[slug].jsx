@@ -263,7 +263,7 @@ export default function ProductDetails({ slug, close }) {
               onClick={recoverProduct}
             >
               <LuRefreshCcw />
-              Recover
+              Un-archive
             </Button>
           ) : (
             <Button
@@ -274,7 +274,7 @@ export default function ProductDetails({ slug, close }) {
               onClick={deleteProduct}
             >
               <LuTrash />
-              Delete
+              Archive
             </Button>
           )}
         </Flex>

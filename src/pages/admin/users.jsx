@@ -379,7 +379,7 @@ export default function Users() {
                     onClick={recoverUser}
                   >
                     <LuRefreshCcw />
-                    Recover Account
+                    Reactivate Account
                   </Button>
                 ) : (
                   <>
@@ -405,7 +405,7 @@ export default function Users() {
                         onClick={deleteUser}
                       >
                         <LuTrash />
-                        Delete User
+                        Deactivate User
                       </Button>
                     </HStack>
                     <Button
@@ -564,7 +564,7 @@ export default function Users() {
               <Tabs.List>
                 <Tabs.Trigger value='active'>Active Users</Tabs.Trigger>
                 <Tabs.Trigger value='deleted'>
-                  Deactivated / Deleted Users
+                  Deactivated Users
                 </Tabs.Trigger>
               </Tabs.List>
             </Tabs.Root>

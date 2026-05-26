@@ -472,7 +472,7 @@ export default function Customers() {
                     onClick={recoverCustomer}
                   >
                     <LuRefreshCcw />
-                    Recover Account
+                    Reactivate Customer
                   </Button>
                 ) : (
                   <>
@@ -498,7 +498,7 @@ export default function Customers() {
                         onClick={deleteCustomer}
                       >
                         <LuTrash />
-                        Delete Customer
+                        Deactivate Customer
                       </Button>
                     </Stack>
                     <Button
@@ -540,7 +540,7 @@ export default function Customers() {
               <Tabs.List>
                 <Tabs.Trigger value='active'>Active Customers</Tabs.Trigger>
                 <Tabs.Trigger value='deleted'>
-                  Deactivated / Deleted Customers
+                  Deactivated Customers
                 </Tabs.Trigger>
               </Tabs.List>
             </Tabs.Root>

@@ -188,7 +188,7 @@ export default function FullDetail({ userRole, order: orderData, cart }) {
               </Stack>
             )}
 
-            {userRole === "SUPERADMIN" && (
+            {userRole === "ITADMIN" && (
               <Button
                 disabled={order.flag_delete}
                 onClick={async () => {

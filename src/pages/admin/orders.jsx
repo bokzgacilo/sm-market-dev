@@ -155,7 +155,7 @@ export default function Orders() {
               <Tabs.List>
                 <Tabs.Trigger value='active'>Active Orders</Tabs.Trigger>
                 <Tabs.Trigger value='deleted'>
-                  Deactivated / Deleted Orders
+                  Archived Orders
                 </Tabs.Trigger>
               </Tabs.List>
             </Tabs.Root>

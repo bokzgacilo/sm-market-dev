@@ -160,7 +160,7 @@ export default function ProductIndex() {
                 <Tabs.List>
                   <Tabs.Trigger value='active'>Active Products</Tabs.Trigger>
                   <Tabs.Trigger value='deleted'>
-                    Deactivated / Deleted Products
+                    Archived Products
                   </Tabs.Trigger>
                 </Tabs.List>
               </Tabs.Root>

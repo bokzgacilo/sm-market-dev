@@ -29,6 +29,7 @@ export default function FullDetail({ userRole, order: orderData, cart }) {
   const [order, setOrder] = useState([])
   const [delivery, setDelivery] = useState([])
   const [loading, setLoading] = useState(true)
+  const canPayOrder = userRole !== "SUPERADMIN" && userRole !== "ITADMIN";
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -175,7 +176,7 @@ export default function FullDetail({ userRole, order: orderData, cart }) {
                 </Field.Root>
               </Stack>
             }
-            {order.status === "pending" && (
+            {order.status === "pending" && canPayOrder && (
               <Stack>
                 <Text>You need to pay first before the merchant can process your order.</Text>
                 <Button

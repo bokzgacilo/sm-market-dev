@@ -49,7 +49,6 @@ export default function Cart() {
       return;
     } else {
       setLoading(true)
-      const secretKey = 'sk_test_Y5BxqyZzNUjNgMLebHFh1Jhy';
       try {
 
         const slugs = cartItems.map(item => item.pid);

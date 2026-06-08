@@ -8,7 +8,7 @@ export default async function handler(req, res) {
       {
         headers: {
           "Content-Type": "application/json",
-          Authorization: "Basic c2tfdGVzdF9ZNUJ4cXlaek5Vak5nTUxlYkhGaDFKaHk6"
+          Authorization: "Basic c2tfdGVzdF9XVG0zYzZqRmlvOTc4Z21ndkJlbTQ3b1Q6"
         }
       }
     );

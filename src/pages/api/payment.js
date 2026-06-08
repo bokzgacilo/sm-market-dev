@@ -9,18 +9,18 @@ export default async function handler(req, res) {
     const parsedLineItems = typeof line_items === "string"
       ? JSON.parse(line_items)
       : line_items;
-    const options = {
-      data: {
-        attributes: {
-          send_email_receipt: false,
-          show_description: true,
-          show_line_items: true,
-          line_items: parsedLineItems,
-          payment_method_types: ["card", "gcash"],
-          success_url: 'https://smmarket-dev.vercel.app/api/payment-success?ref=' + ref
+      const options = {
+        data: {
+          attributes: {
+            send_email_receipt: false,
+            show_description: true,
+            show_line_items: true,
+            line_items: parsedLineItems,
+            payment_method_types: ["card", "gcash"],
+            success_url: 'https://smmarket-dev.vercel.app/api/payment-success?ref=' + ref
+          }
         }
       }
-    }
     console.log(options)
     const response = await axios.post(
       "https://api.paymongo.com/v1/checkout_sessions",
@@ -28,7 +28,7 @@ export default async function handler(req, res) {
       {
         headers: {
           "Content-Type": "application/json",
-          Authorization: "Basic c2tfdGVzdF9ZNUJ4cXlaek5Vak5nTUxlYkhGaDFKaHk6"
+          Authorization: "Basic c2tfdGVzdF9XVG0zYzZqRmlvOTc4Z21ndkJlbTQ3b1Q6"
         }
       }
     );

@@ -165,9 +165,13 @@ export default function ProductPage() {
                       <NumberInput.Control />
                       <NumberInput.Input />
                     </NumberInput.Root>
-                    <Text fontSize="12px" fontWeight="bold" color="fg.muted">
+                    <Field.HelperText
+                      fontSize="12px"
+                      fontWeight="bold"
+                      color="fg.muted"
+                    >
                       AVAILABLE: {inventory.available}
-                    </Text>
+                    </Field.HelperText>
                   </Field.Root>
                   <Text mt={4} w={{ base: "full", lg: "70%" }}>
                     {product.products.description}

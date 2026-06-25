@@ -265,17 +265,17 @@ function MeasurementOverlay({ measurements, labels }) {
       <MeasurementLabel
         position={[center.x, min.y - labelPad, max.z + labelPad]}
       >
-        L {formatDimension(labels?.length ?? length)}
+        Length {formatDimension(labels?.length ?? length)} cm
       </MeasurementLabel>
       <MeasurementLabel
         position={[max.x + labelPad, min.y - labelPad, center.z]}
       >
-        W {formatDimension(labels?.width ?? width)}
+        Width {formatDimension(labels?.width ?? width)} cm
       </MeasurementLabel>
       <MeasurementLabel
         position={[max.x + labelPad, center.y, min.z - labelPad]}
       >
-        H {formatDimension(labels?.height ?? height)}
+        Height {formatDimension(labels?.height ?? height)} cm
       </MeasurementLabel>
     </>
   );
@@ -378,7 +378,7 @@ export default function ProductViewer({
   return (
     <Box
       position="relative"
-      height={{ base: "250px", lg: "700px" }}
+      height={{ base: "550px", lg: "700px" }}
       bg="gray.300"
       // rounded={{ base: 0, lg: "md" }}
       overflow="hidden"

@@ -6,6 +6,7 @@ import '@/styles/globals.css';
 import { Theme } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import { Toaster } from '@/components/ui/toaster';
 import { CartProvider } from '@/context/CartContext';
 import AdminLayout from './admin/layout';
 
@@ -36,6 +37,7 @@ export default function App({ Component, pageProps }) {
                 <Component auth={authId} {...pageProps} />
               </Layout>
             </CartProvider>}
+        <Toaster />
       </Theme>
     </Provider>
   );

@@ -22,6 +22,7 @@ import Head from 'next/head';
 import { useState } from 'react';
 import { LuTrash2, LuUpload, LuX } from 'react-icons/lu';
 import ProductViewer from '@/components/custom/ProductViewer';
+import { toaster } from '@/components/ui/toaster';
 import { categories } from '@/constants/Categories';
 import { supabase } from '@/helper/supabase';
 
@@ -38,6 +39,11 @@ export default function AddProduct() {
   const [images, setImages] = useState([]);
   const [url, setUrl] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [measurements, setMeasurements] = useState({
+    length: '',
+    width: '',
+    height: '',
+  });
   const [form, setForm] = useState({
     title: '',
     brand: '',
@@ -61,6 +67,12 @@ export default function AddProduct() {
 
   const handleAddProduct = async () => {
     setLoading(true);
+    const toastId = toaster.create({
+      title: 'Adding product',
+      description: 'Uploading media and saving product details.',
+      type: 'loading',
+    });
+
     try {
       const uploadedUrls = [];
       const folder = slugify(form.title);
@@ -83,6 +95,12 @@ export default function AddProduct() {
 
         if (error) {
           console.error('Upload error:', error);
+          toaster.update(toastId, {
+            title: 'Add product failed',
+            description: 'Product image upload failed.',
+            type: 'error',
+            closable: true,
+          });
           return null;
         }
 
@@ -113,6 +131,12 @@ export default function AddProduct() {
 
       if (error) {
         console.error('Upload error:', error);
+        toaster.update(toastId, {
+          title: 'Add product failed',
+          description: '3D model upload failed.',
+          type: 'error',
+          closable: true,
+        });
         return null;
       }
 
@@ -125,6 +149,11 @@ export default function AddProduct() {
         ...form,
         images: uploadedUrls,
         '3d_model': publicData.publicUrl,
+        measurements: {
+          length: Number(measurements.length),
+          width: Number(measurements.width),
+          height: Number(measurements.height),
+        },
       };
 
       const { error: insertError } = await supabase
@@ -134,11 +163,29 @@ export default function AddProduct() {
 
       if (insertError) {
         console.error('Insert error:', insertError);
+        toaster.update(toastId, {
+          title: 'Add product failed',
+          description: insertError.message || 'Product insert failed.',
+          type: 'error',
+          closable: true,
+        });
         return;
       }
-      alert('Product added successfully!');
+
+      toaster.update(toastId, {
+        title: 'Product added',
+        description: 'Product was created successfully.',
+        type: 'success',
+        closable: true,
+      });
     } catch (err) {
       console.error(err);
+      toaster.update(toastId, {
+        title: 'Add product failed',
+        description: err?.message || 'Unexpected error while adding product.',
+        type: 'error',
+        closable: true,
+      });
     } finally {
       setLoading(false);
     }
@@ -293,6 +340,65 @@ export default function AddProduct() {
                   />
                 </Field.Root>
 
+                <Card.Root variant='outline'>
+                  <Card.Header p={4}>
+                    <Card.Title>Measurements</Card.Title>
+                  </Card.Header>
+                  <Separator />
+                  <Card.Body p={4}>
+                    <SimpleGrid columns={{ base: 1, md: 3 }} gap={4}>
+                      <Field.Root>
+                        <Field.Label>Length</Field.Label>
+                        <NumberInput.Root
+                          value={measurements.length}
+                          onValueChange={(e) =>
+                            setMeasurements((current) => ({
+                              ...current,
+                              length: e.value,
+                            }))
+                          }
+                          min={0}
+                        >
+                          <NumberInput.Control />
+                          <NumberInput.Input />
+                        </NumberInput.Root>
+                      </Field.Root>
+                      <Field.Root>
+                        <Field.Label>Width</Field.Label>
+                        <NumberInput.Root
+                          value={measurements.width}
+                          onValueChange={(e) =>
+                            setMeasurements((current) => ({
+                              ...current,
+                              width: e.value,
+                            }))
+                          }
+                          min={0}
+                        >
+                          <NumberInput.Control />
+                          <NumberInput.Input />
+                        </NumberInput.Root>
+                      </Field.Root>
+                      <Field.Root>
+                        <Field.Label>Height</Field.Label>
+                        <NumberInput.Root
+                          value={measurements.height}
+                          onValueChange={(e) =>
+                            setMeasurements((current) => ({
+                              ...current,
+                              height: e.value,
+                            }))
+                          }
+                          min={0}
+                        >
+                          <NumberInput.Control />
+                          <NumberInput.Input />
+                        </NumberInput.Root>
+                      </Field.Root>
+                    </SimpleGrid>
+                  </Card.Body>
+                </Card.Root>
+
                 <Button
                   mt='auto'
                   onClick={handleAddProduct}
@@ -342,7 +448,11 @@ export default function AddProduct() {
                       {/* <FileUpload.List /> */}
                     </FileUpload.Root>
                   </Field.Root>
-                  <ProductViewer modelUrl={url} />
+                  <ProductViewer
+                    modelUrl={url}
+                    description={form.description}
+                    productMeasurements={measurements}
+                  />
                 </Stack>
               </Card.Body>
             </Card.Root>

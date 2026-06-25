@@ -1,5 +1,6 @@
 import {
   Badge,
+  Box,
   Button,
   CloseButton,
   Container,
@@ -12,11 +13,11 @@ import {
   SimpleGrid,
   Stack,
   Text,
-} from '@chakra-ui/react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useRouter } from 'next/router';
-import { createContext, useContext, useEffect, useState } from 'react';
+} from "@chakra-ui/react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useRouter } from "next/router";
+import { createContext, useContext, useEffect, useState } from "react";
 import {
   LuBox,
   LuChevronRight,
@@ -26,8 +27,8 @@ import {
   LuShoppingBag,
   LuTruck,
   LuUsers,
-} from 'react-icons/lu';
-import { supabase } from '@/helper/supabase';
+} from "react-icons/lu";
+import { supabase } from "@/helper/supabase";
 
 export const AdminContext = createContext({
   userRole: null,
@@ -36,40 +37,40 @@ export const AdminContext = createContext({
 export const useAdmin = () => useContext(AdminContext);
 
 const getRoleIndicator = (role) => {
-  if (role === 'ITADMIN') {
-    return 'IT ADMIN';
+  if (role === "ITADMIN") {
+    return "IT ADMIN";
   }
 
-  return 'ADMIN';
+  return "ADMIN";
 };
 
 const permissionProfiles = {
   ITADMIN: {
-    title: 'IT ADMIN Permissions',
+    title: "IT ADMIN Permissions",
     permissions: [
-      'Manage system users',
-      'Edit customer accounts',
-      'Reset account passwords',
-      'Deactivate and recover accounts',
-      'Delete and recover products',
-      'View orders, sales, and deliveries',
+      "Manage system users",
+      "Edit customer accounts",
+      "Reset account passwords",
+      "Deactivate and recover accounts",
+      "Delete and recover products",
+      "View orders, sales, and deliveries",
     ],
   },
   ADMIN: {
-    title: 'ADMIN Permissions',
+    title: "ADMIN Permissions",
     permissions: [
-      'Manage products and inventory',
-      'Toggle product visibility',
-      'Edit product details',
-      'Process orders and sales',
-      'Manage delivery status',
-      'View customers and system users',
+      "Manage products and inventory",
+      "Toggle product visibility",
+      "Edit product details",
+      "Process orders and sales",
+      "Manage delivery status",
+      "View customers and system users",
     ],
   },
 };
 
 const getPermissionProfile = (role) => {
-  if (role === 'ITADMIN') {
+  if (role === "ITADMIN") {
     return permissionProfiles.ITADMIN;
   }
 
@@ -79,12 +80,12 @@ const getPermissionProfile = (role) => {
 export default function AdminLayout({ children }) {
   const router = useRouter();
   const navItems = [
-    { href: '/', label: 'Go Shopping', icon: LuShoppingBag },
-    { href: '/admin/customers', label: 'Customers', icon: LuUsers },
-    { href: '/admin/users', label: 'Administrators', icon: LuUsers },
-    { href: '/admin/deliveries', label: 'Deliveries', icon: LuTruck },
-    { href: '/admin/orders', label: 'Orders and Sales', icon: LuClipboard },
-    { href: '/admin/products', label: 'Products', icon: LuBox },
+    { href: "/", label: "Go Shopping", icon: LuShoppingBag },
+    { href: "/admin/customers", label: "Customers", icon: LuUsers },
+    { href: "/admin/users", label: "Administrators", icon: LuUsers },
+    { href: "/admin/deliveries", label: "Deliveries", icon: LuTruck },
+    { href: "/admin/orders", label: "Orders and Sales", icon: LuClipboard },
+    { href: "/admin/products", label: "Products", icon: LuBox },
   ];
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [userRole, setUserRole] = useState(null);
@@ -97,22 +98,22 @@ export default function AdminLayout({ children }) {
     const fetchUser = async () => {
       const { data } = await supabase.auth.getUser();
       if (!data.user) {
-        router.replace('/admin/signin');
+        router.replace("/admin/signin");
       } else {
         const { data: user, error } = await supabase
-          .from('system_users')
-          .select('role, status, flag_delete')
-          .eq('id', data.user.id)
+          .from("system_users")
+          .select("role, status, flag_delete")
+          .eq("id", data.user.id)
           .maybeSingle();
 
         if (
           error ||
           !user ||
-          user.status?.toLowerCase() !== 'active' ||
+          user.status?.toLowerCase() !== "active" ||
           user.flag_delete
         ) {
           await supabase.auth.signOut();
-          router.replace('/admin/signin');
+          router.replace("/admin/signin");
           return;
         }
 
@@ -128,11 +129,11 @@ export default function AdminLayout({ children }) {
   }
 
   return (
-    <Container p={0} maxWidth='full' bg='gray.200'>
+    <Container p={0} maxWidth="full" bg="gray.200">
       <Dialog.Root
         open={permissionsOpen}
         onOpenChange={(e) => setPermissionsOpen(e.open)}
-        size='md'
+        size="md"
       >
         <Portal>
           <Dialog.Backdrop />
@@ -143,10 +144,10 @@ export default function AdminLayout({ children }) {
               </Dialog.Header>
               <Dialog.Body>
                 <Stack gap={3}>
-                  <Text color='fg.muted'>Signed in as {roleIndicator}</Text>
-                  <Stack as='ul' pl={5} gap={2}>
+                  <Text color="fg.muted">Signed in as {roleIndicator}</Text>
+                  <Stack as="ul" pl={5} gap={2}>
                     {permissionProfile.permissions.map((permission) => (
-                      <Text as='li' key={permission}>
+                      <Text as="li" key={permission}>
                         {permission}
                       </Text>
                     ))}
@@ -154,24 +155,29 @@ export default function AdminLayout({ children }) {
                 </Stack>
               </Dialog.Body>
               <Dialog.CloseTrigger asChild>
-                <CloseButton size='sm' />
+                <CloseButton size="sm" />
               </Dialog.CloseTrigger>
             </Dialog.Content>
           </Dialog.Positioner>
         </Portal>
       </Dialog.Root>
 
-      <SimpleGrid templateColumns='350px 1fr' height='100dvh' gap={4}>
-        <Stack bg='bg' gap={0} pb={4}>
-          <Stack mt={4} align='center' gap={4}>
+      <SimpleGrid
+        overflow="hidden"
+        h="100dvh"
+        templateColumns="350px 1fr"
+        gap={4}
+      >
+        <Stack bg="bg" gap={0} pb={4} h="100dvh" position="sticky">
+          <Stack mt={4} align="center" gap={4}>
             <Image
-              src='/images/sm-markets-blue.jpg'
-              width='300px'
-              alt='SM Logo'
+              src="/images/sm-markets-blue.jpg"
+              width="300px"
+              alt="SM Logo"
             />
             <Badge
-              variant='solid'
-              colorPalette={userRole === 'ITADMIN' ? 'purple' : 'blue'}
+              variant="solid"
+              colorPalette={userRole === "ITADMIN" ? "purple" : "blue"}
             >
               {roleIndicator}
             </Badge>
@@ -181,38 +187,38 @@ export default function AdminLayout({ children }) {
             {navItems.map((item) => (
               <Link key={item.href} href={item.href}>
                 <Flex
-                  border='1px solid'
+                  border="1px solid"
                   borderColor={
-                    pathname === item.href ? 'border' : 'transparent'
+                    pathname === item.href ? "border" : "transparent"
                   }
-                  bg={pathname === item.href ? 'blue.focusRing' : 'none'}
-                  align='center'
-                  direction='row'
+                  bg={pathname === item.href ? "blue.focusRing" : "none"}
+                  align="center"
+                  direction="row"
                   gap={4}
                   px={4}
                   py={2}
-                  borderRadius='md'
-                  color={pathname === item.href ? 'fg.inverted' : 'fg.accent'}
+                  borderRadius="md"
+                  color={pathname === item.href ? "fg.inverted" : "fg.accent"}
                 >
                   <Icon as={item.icon} boxSize={5} />
                   <Text>{item.label}</Text>
-                  <Icon ml='auto' as={LuChevronRight} boxSize={5} />
+                  <Icon ml="auto" as={LuChevronRight} boxSize={5} />
                 </Flex>
               </Link>
             ))}
-            <Badge size='lg' mt='auto' variant='solid' colorPalette='green'>
+            <Badge size="lg" mt="auto" variant="solid" colorPalette="green">
               Signed in as {roleIndicator}
             </Badge>
-            <Button variant='outline' onClick={() => setPermissionsOpen(true)}>
+            <Button variant="outline" onClick={() => setPermissionsOpen(true)}>
               My Permissions
               <LuMessageCircleQuestion />
             </Button>
             <Button
-              variant='outline'
-              colorPalette='red'
+              variant="outline"
+              colorPalette="red"
               onClick={async () => {
                 await supabase.auth.signOut();
-                router.replace('/admin/signin');
+                router.replace("/admin/signin");
               }}
             >
               <LuLogOut />
@@ -220,9 +226,11 @@ export default function AdminLayout({ children }) {
             </Button>
           </Stack>
         </Stack>
-        <AdminContext.Provider value={{ userRole }}>
-          {children}
-        </AdminContext.Provider>
+        <Box h="100dvh" overflowY="auto">
+          <AdminContext.Provider value={{ userRole }}>
+            {children}
+          </AdminContext.Provider>
+        </Box>
       </SimpleGrid>
     </Container>
   );

@@ -41,11 +41,16 @@ export default function Signin() {
     try {
       const { data: customer, error: customerError } = await supabase
         .from('users')
-        .select('flag_delete')
+        .select('id, flag_delete')
         .eq('email', form.email)
         .maybeSingle();
 
       if (customerError) throw customerError;
+
+      if (!customer) {
+        alert('No customer account found with this email address.');
+        return;
+      }
 
       if (customer?.flag_delete) {
         alert(
@@ -63,6 +68,12 @@ export default function Signin() {
 
       const user = data.user;
       if (user) {
+        if (user.id !== customer.id) {
+          await supabase.auth.signOut();
+          alert('This sign in is not linked to a customer account.');
+          return;
+        }
+
         localStorage.setItem('auth_id', user.id);
         alert('Login successful!');
         router.replace('/profile');

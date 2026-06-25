@@ -18,65 +18,108 @@ import {
   Tag,
   Text,
 } from '@chakra-ui/react';
-import axios from 'axios';
 import Head from 'next/head';
-import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import CustomBreadcrumb from '@/components/custom/CustomBreadcrumb';
 import EditAddress from '@/components/custom/EditAddress';
-import { supabase } from '@/helper/supabase';
 import FullDetail from '@/components/custom/FullDetail';
-import { useRouter } from 'next/router';
+import { supabase } from '@/helper/supabase';
 
 export default function Profile() {
   const router = useRouter();
   const [orders, setOrders] = useState([]);
-  const [userData, setUserData] = useState([])
-  const [auth, setAuth] = useState(null)
-  const [open, setOpen] = useState(false)
-  const [menu, setMenu] = useState(null)
-  const [cart, setCart] = useState([])
-  const [order, setOrder] = useState([])
+  const [userData, setUserData] = useState([]);
+  const [auth, setAuth] = useState(null);
+  const [open, setOpen] = useState(false);
+  const [cart, setCart] = useState([]);
+  const [order, setOrder] = useState([]);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [isProfileLoading, setIsProfileLoading] = useState(false);
+  const [profileError, setProfileError] = useState('');
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error('Logout failed:', error.message);
+    } finally {
+      localStorage.removeItem('auth_id');
+      localStorage.removeItem('authSession');
+      router.replace('/signin');
+    }
+  };
 
   useEffect(() => {
-    if (!localStorage.getItem("auth_id")) {
-      router.replace("/signin");
+    const authId = localStorage.getItem('auth_id');
+
+    if (authId) {
+      setAuth(authId);
     } else {
-      setAuth(localStorage.getItem("auth_id"));
+      setProfileError('Your session has expired. Please sign in again.');
     }
+
     setIsCheckingAuth(false);
-  }, [router]);
+  }, []);
 
   useEffect(() => {
     if (!auth) return;
 
-    const fetchUserData = async () => {
-      const { data } = await supabase
+    const fetchProfile = async () => {
+      setIsProfileLoading(true);
+      setProfileError('');
+
+      const { data: profile, error: profileFetchError } = await supabase
         .from('users')
         .select('*')
-        .eq('id', localStorage.getItem("auth_id"))
+        .eq('id', auth)
+        .maybeSingle();
 
-      setUserData(data[0])
-    }
+      if (profileFetchError || !profile) {
+        const { data: systemUser } = await supabase
+          .from('system_users')
+          .select('id')
+          .eq('id', auth)
+          .maybeSingle();
 
-    const fetchAllOrders = async () => {
-      const { data } = await supabase
+        setUserData(null);
+        setOrders([]);
+        setProfileError(
+          systemUser
+            ? 'Admin accounts cannot open the customer profile page. Please sign in with a customer account.'
+            : 'We could not load your account. Please sign in again.',
+        );
+        setIsProfileLoading(false);
+        return;
+      }
+
+      setUserData(profile);
+
+      const { data: customerOrders, error: ordersFetchError } = await supabase
         .from('orders')
         .select('*')
-        .eq('customer_id', localStorage.getItem("auth_id"));
+        .eq('customer_id', auth);
 
-      setOrders(data);
+      if (ordersFetchError) {
+        console.error('Error fetching orders:', ordersFetchError.message);
+        setOrders([]);
+      } else {
+        setOrders(customerOrders || []);
+      }
+
+      setIsProfileLoading(false);
     };
 
-    fetchAllOrders();
-    fetchUserData()
+    fetchProfile();
   }, [auth]);
 
   if (isCheckingAuth) {
     return (
       <Center>
-        <Stack alignItems="center" height="60dvh" p={4}>
+        <Stack alignItems='center' height='60dvh' p={4}>
           <Spinner />
           <Text>Loading...</Text>
         </Stack>
@@ -84,7 +127,7 @@ export default function Profile() {
     );
   }
 
-  if (!auth) return null;
+  const shouldShowReloginFallback = !auth || profileError;
 
   return (
     <>
@@ -97,8 +140,8 @@ export default function Profile() {
       <Dialog.Root
         open={open}
         onOpenChange={(e) => setOpen(e.open)}
-        size="xl"
-        scrollBehavior="inside"
+        size='xl'
+        scrollBehavior='inside'
       >
         <Portal>
           <Dialog.Backdrop />
@@ -108,13 +151,10 @@ export default function Profile() {
                 <Dialog.Title>Full Details</Dialog.Title>
               </Dialog.Header>
               <Dialog.Body>
-                <FullDetail
-                  order={order}
-                  cart={cart}
-                />
+                <FullDetail order={order} cart={cart} />
               </Dialog.Body>
               <Dialog.CloseTrigger asChild>
-                <CloseButton size="sm" />
+                <CloseButton size='sm' />
               </Dialog.CloseTrigger>
             </Dialog.Content>
           </Dialog.Positioner>
@@ -127,10 +167,36 @@ export default function Profile() {
         <Heading size='3xl' color='#0030FF'>
           Account
         </Heading>
-        {!userData || Object.keys(userData).length === 0 ?
-          <Stack align="center" py={20}>
+
+        {shouldShowReloginFallback ? (
+          <Center py={20}>
+            <Card.Root maxW='md' width='full'>
+              <Card.Body>
+                <Stack gap={4} align='center' textAlign='center'>
+                  <Heading size='lg'>Please sign in again</Heading>
+                  <Text color='gray.600'>
+                    {profileError ||
+                      'We could not verify your account session.'}
+                  </Text>
+                  <Button
+                    colorPalette='blue'
+                    loading={isLoggingOut}
+                    onClick={handleLogout}
+                  >
+                    Re-login
+                  </Button>
+                </Stack>
+              </Card.Body>
+            </Card.Root>
+          </Center>
+        ) : isProfileLoading ||
+          !userData ||
+          Object.keys(userData).length === 0 ? (
+          <Stack align='center' py={20}>
+            <Spinner />
             <Text>Loading profile...</Text>
-          </Stack> :
+          </Stack>
+        ) : (
           <SimpleGrid columns={{ base: 1, lg: 2 }} gap={6}>
             <Card.Root>
               <Card.Header p={4}>
@@ -141,7 +207,7 @@ export default function Profile() {
                 <Stack gap={0}>
                   <Stack bg='gray.100' align='center' gap={0} py={4}>
                     <Avatar.Root boxSize='150px'>
-                      <Avatar.Image src="/default.jpg"/>
+                      <Avatar.Image src='/default.jpg' />
                     </Avatar.Root>
                     <Heading fontSize='32px' mt={4}>
                       {userData.first_name} {userData.last_name}
@@ -168,7 +234,7 @@ export default function Profile() {
                         <Field.Label>Street/Building/Unit/Room</Field.Label>
                         <Input
                           readOnly
-                          size="sm"
+                          size='sm'
                           value={userData?.shipping_address?.address_line || ''}
                         />
                       </Field.Root>
@@ -177,7 +243,7 @@ export default function Profile() {
                         <Field.Label>Barangay</Field.Label>
                         <Input
                           readOnly
-                          size="sm"
+                          size='sm'
                           value={userData?.shipping_address?.barangay || ''}
                         />
                       </Field.Root>
@@ -186,7 +252,7 @@ export default function Profile() {
                         <Field.Label>City</Field.Label>
                         <Input
                           readOnly
-                          size="sm"
+                          size='sm'
                           value={userData?.shipping_address?.city || ''}
                         />
                       </Field.Root>
@@ -195,7 +261,7 @@ export default function Profile() {
                         <Field.Label>Province</Field.Label>
                         <Input
                           readOnly
-                          size="sm"
+                          size='sm'
                           value={userData?.shipping_address?.province || ''}
                         />
                       </Field.Root>
@@ -207,10 +273,8 @@ export default function Profile() {
               <Card.Footer p={4}>
                 <Button
                   colorPalette='red'
-                  onClick={async () => {
-                    localStorage.removeItem("auth_id");
-                    router.replace("/signin");
-                  }}
+                  loading={isLoggingOut}
+                  onClick={handleLogout}
                 >
                   Logout
                 </Button>
@@ -239,12 +303,16 @@ export default function Profile() {
                             <Table.Row key={order.id}>
                               <Table.Cell
                                 onClick={() => {
-                                  setOpen(true)
-                                  setCart(order.cart_items)
-                                  setOrder(order)
+                                  setOpen(true);
+                                  setCart(order.cart_items);
+                                  setOrder(order);
                                 }}
-                              >{order.reference_number}</Table.Cell>
-                              <Table.Cell>{order.total_amount / 100}</Table.Cell>
+                              >
+                                {order.reference_number}
+                              </Table.Cell>
+                              <Table.Cell>
+                                {order.total_amount / 100}
+                              </Table.Cell>
                               <Table.Cell>
                                 <Tag.Root>
                                   <Tag.Label>
@@ -261,7 +329,11 @@ export default function Profile() {
                     <Stack alignItems='center' gap={4} p={4}>
                       <Heading>No Orders</Heading>
                       <Box>
-                        <Button rounded='full' bg='blue.600' onClick={() => router.replace("/")}>
+                        <Button
+                          rounded='full'
+                          bg='blue.600'
+                          onClick={() => router.replace('/')}
+                        >
                           Continue Shopping
                         </Button>
                       </Box>
@@ -271,7 +343,7 @@ export default function Profile() {
               </Card.Root>
             </Box>
           </SimpleGrid>
-        }
+        )}
       </Stack>
     </>
   );

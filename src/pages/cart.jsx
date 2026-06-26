@@ -68,10 +68,10 @@ export default function Cart() {
 
             return {
               name: product.title,
-              amount: AMOUNT,
+              amount: Number(AMOUNT),
               currency: "PHP",
               description: "",
-              quantity: cartItem.quantity,
+              quantity: Number(cartItem.quantity),
             };
           })
           .filter(Boolean);

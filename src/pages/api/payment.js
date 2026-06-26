@@ -1,6 +1,31 @@
 import { supabase } from "@/helper/supabase";
 import axios from "axios";
 
+function normalizeLineItems(lineItems) {
+  if (!Array.isArray(lineItems)) {
+    throw new Error("line_items must be an array");
+  }
+
+  return lineItems.map((item) => {
+    const quantity = Number(item.quantity);
+    const amount = Number(item.amount);
+
+    if (!Number.isFinite(quantity) || quantity <= 0) {
+      throw new Error(`Invalid quantity for ${item.name || "line item"}`);
+    }
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      throw new Error(`Invalid amount for ${item.name || "line item"}`);
+    }
+
+    return {
+      ...item,
+      amount,
+      quantity,
+    };
+  });
+}
+
 export default async function handler(req, res) {
   try {
     const {
@@ -17,13 +42,14 @@ export default async function handler(req, res) {
     // Parse stringified line_items
     const parsedLineItems =
       typeof line_items === "string" ? JSON.parse(line_items) : line_items;
+    const normalizedLineItems = normalizeLineItems(parsedLineItems);
     const options = {
       data: {
         attributes: {
           send_email_receipt: false,
           show_description: true,
           show_line_items: true,
-          line_items: parsedLineItems,
+          line_items: normalizedLineItems,
           payment_method_types: ["card", "gcash"],
           success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/api/payment-success?ref=${ref}`,
         },

@@ -1,20 +1,19 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
 export const supabase = createClient(
-  'https://hangbzargmjosygewazb.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhhbmdiemFyZ21qb3N5Z2V3YXpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkyMzE4OTMsImV4cCI6MjA3NDgwNzg5M30.nb58jac_6oQcLAMpgmjDZ3eVgSWAlNX8XHQ3U9ZeQ6w',
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_KEY
 );
 
 export const getAllProducts = async ({
   category = null,
   subcategory = null,
   child = null,
-  type = "all",      // "all" | "new" | "sale"
-  brand = null,      // filter by brand
+  type = "all", // "all" | "new" | "sale"
+  brand = null, // filter by brand
   sortBy = null,
-  q = null,          // search keyword
+  q = null, // search keyword
 } = {}) => {
-
   let query = supabase
     .from("products")
     .select("id")

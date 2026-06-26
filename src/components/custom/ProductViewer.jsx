@@ -258,7 +258,6 @@ function MeasurementOverlay({ measurements, labels }) {
 
   return (
     <>
-      <box3Helper args={[bounds, color]} />
       <Line points={lengthLine} color={color} lineWidth={2} />
       <Line points={widthLine} color={color} lineWidth={2} />
       <Line points={heightLine} color={color} lineWidth={2} />

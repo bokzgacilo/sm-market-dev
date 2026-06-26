@@ -3,36 +3,43 @@ import axios from "axios";
 
 export default async function handler(req, res) {
   try {
-    const { ref, auth_id, method, ship_to, store_code, line_items, cartItems, total_amount } = req.body;
+    const {
+      ref,
+      auth_id,
+      method,
+      ship_to,
+      store_code,
+      line_items,
+      cartItems,
+      total_amount,
+    } = req.body;
 
     // Parse stringified line_items
-    const parsedLineItems = typeof line_items === "string"
-      ? JSON.parse(line_items)
-      : line_items;
-      const options = {
-        data: {
-          attributes: {
-            send_email_receipt: false,
-            show_description: true,
-            show_line_items: true,
-            line_items: parsedLineItems,
-            payment_method_types: ["card", "gcash"],
-            success_url: 'https://smmarket-dev.vercel.app/api/payment-success?ref=' + ref
-          }
-        }
-      }
-    console.log(options)
+    const parsedLineItems =
+      typeof line_items === "string" ? JSON.parse(line_items) : line_items;
+    const options = {
+      data: {
+        attributes: {
+          send_email_receipt: false,
+          show_description: true,
+          show_line_items: true,
+          line_items: parsedLineItems,
+          payment_method_types: ["card", "gcash"],
+          success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/api/payment-success?ref=${ref}`,
+        },
+      },
+    };
+    console.log(options);
     const response = await axios.post(
       "https://api.paymongo.com/v1/checkout_sessions",
       options,
       {
         headers: {
           "Content-Type": "application/json",
-          Authorization: "Basic c2tfdGVzdF9XVG0zYzZqRmlvOTc4Z21ndkJlbTQ3b1Q6"
-        }
+          Authorization: `Basic ${process.env.PAYMONGO_KEY}`,
+        },
       }
     );
-
 
     if (response.data) {
       for (const item of cartItems) {
@@ -50,7 +57,7 @@ export default async function handler(req, res) {
         updatePayload[store_code] = {
           ...branchInv,
           available: branchInv.available - quantity,
-          sold: branchInv.sold + quantity
+          sold: branchInv.sold + quantity,
         };
 
         await supabase
@@ -68,7 +75,7 @@ export default async function handler(req, res) {
         total_amount: total_amount,
         status: "pending",
         shipping_method: method,
-        shipping_address: ship_to
+        shipping_address: ship_to,
       };
 
       const { error: insertError } = await supabase
@@ -94,14 +101,13 @@ export default async function handler(req, res) {
         return res.status(200).json({
           success: true,
           checkout_url: checkoutUrl,
-          checkout_id: response.data.data.id
+          checkout_id: response.data.data.id,
         });
       }
     }
   } catch (error) {
     return res.status(error.response?.status || 500).json({
-      error: error.response?.data || error.message
+      error: error.response?.data || error.message,
     });
   }
 }
-

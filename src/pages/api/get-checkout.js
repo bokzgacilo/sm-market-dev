@@ -8,20 +8,19 @@ export default async function handler(req, res) {
       {
         headers: {
           "Content-Type": "application/json",
-          Authorization: "Basic c2tfdGVzdF9XVG0zYzZqRmlvOTc4Z21ndkJlbTQ3b1Q6"
-        }
+          Authorization: `Basic ${process.env.PAYMONGO_KEY}`,
+        },
       }
     );
 
     res.status(200).json({
       success: true,
       id: checkout_id,
-      checkout_url: response.data.data.attributes.checkout_url
-    })
+      checkout_url: response.data.data.attributes.checkout_url,
+    });
   } catch (error) {
     return res.status(error.response?.status || 500).json({
-      error: error.response?.data || error.message
+      error: error.response?.data || error.message,
     });
   }
 }
-

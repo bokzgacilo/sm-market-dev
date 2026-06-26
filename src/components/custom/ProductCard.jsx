@@ -59,7 +59,15 @@ export default function ProductCard({ pid, ...props }) {
   if (loading || !product) {
     return (
       <Stack gap={4}>
-        <Skeleton width="100%" height={{ base: "150px", md: "300px" }} />
+        <Skeleton
+          width="100%"
+          height={{
+            base: "180px",
+            sm: "220px",
+            md: "260px",
+            lg: "300px",
+          }}
+        />
         <SkeletonText noOfLines={1} />
         <SkeletonText w="50%" noOfLines={1} />
         <Skeleton width="100%" height="40px" />
@@ -83,7 +91,12 @@ export default function ProductCard({ pid, ...props }) {
               alt={product.title}
               src={product.images?.[0]}
               width="100%"
-              height={{ base: "150px", md: "300px" }}
+              height={{
+                base: "180px",
+                sm: "220px",
+                md: "260px",
+                lg: "300px",
+              }}
               objectFit="cover"
             />
 
@@ -103,28 +116,47 @@ export default function ProductCard({ pid, ...props }) {
             </Flex>
           </Stack>
 
-          <Heading fontSize={{ base: "md", lg: "xl" }} color="#0030FF" fontWeight="semibold">
+          <Heading
+            fontSize={{ base: "md", lg: "xl" }}
+            color="#0030FF"
+            fontWeight="semibold"
+          >
             {product.title}
           </Heading>
         </Stack>
       </Link>
 
-      {
-        !product.isSale ?
+      {!product.isSale ? (
+        <Text fontSize="26px" fontWeight="700">
+          ₱
+          {Number(product.price).toLocaleString("en-PH", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}
+        </Text>
+      ) : (
+        <Flex
+          direction={{ base: "column", lg: "row" }}
+          alignItems={{ base: "start", lg: "center" }}
+          gap={{ base: 0, lg: 2 }}
+        >
           <Text fontSize="26px" fontWeight="700">
-            ₱{Number(product.price).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            ₱
+            {Number(product.compare_at_price).toLocaleString("en-PH", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
           </Text>
-          :
-          <Flex direction={{ base: "column", lg: "row" }} alignItems={{ base: "start", lg: "center" }} gap={{ base: 0, lg: 2 }}>
-            <Text fontSize="26px" fontWeight="700">
-              ₱{Number(product.compare_at_price).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </Text>
-            <Text fontSize="14px" fontWeight="700" textDecoration="line-through" color="gray.500">
-              ₱{Number(product.price).toLocaleString("en-PH")}
-            </Text>
-          </Flex>
-      }
-
+          <Text
+            fontSize="14px"
+            fontWeight="700"
+            textDecoration="line-through"
+            color="gray.500"
+          >
+            ₱{Number(product.price).toLocaleString("en-PH")}
+          </Text>
+        </Flex>
+      )}
 
       <Dialog.Root open={isOpen} onOpenChange={(e) => setIsOpen(e.open)}>
         <Dialog.Trigger asChild>
@@ -180,8 +212,8 @@ export default function ProductCard({ pid, ...props }) {
                   bgColor="#0030FF"
                   disabled={qty === 0}
                   onClick={async () => {
-                    await addToCart(product, qty)
-                    setIsOpen(false)
+                    await addToCart(product, qty);
+                    setIsOpen(false);
                   }}
                 >
                   Add To Cart <LuShoppingCart />

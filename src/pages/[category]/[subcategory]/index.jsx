@@ -9,30 +9,32 @@ import {
   Text,
   Flex,
   Tag,
-} from '@chakra-ui/react';
-import Head from 'next/head';
-import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
-import CustomBreadcrumb from '@/components/custom/CustomBreadcrumb';
-import ProductCard from '@/components/custom/ProductCard';
-import formatTitle from '@/helper/slug';
-import { getAllProducts } from '@/helper/supabase';
-import Filters from '@/components/custom/Filters';
-import Page404 from '@/components/404';
-import { categories } from '@/constants/Categories';
-import Link from 'next/link';
+} from "@chakra-ui/react";
+import Head from "next/head";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import CustomBreadcrumb from "@/components/custom/CustomBreadcrumb";
+import ProductCard from "@/components/custom/ProductCard";
+import formatTitle from "@/helper/slug";
+import { getAllProducts } from "@/helper/supabase";
+import Filters from "@/components/custom/Filters";
+import Page404 from "@/components/404";
+import { categories } from "@/constants/Categories";
+import Link from "next/link";
 
 export default function CategoryPage() {
   const router = useRouter();
   const { category, subcategory, type = "all", sortBy = null } = router.query;
   const [allProducts, setAllProducts] = useState([]);
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(true);
 
-  const subcategoryObject = categories.find((cat) => cat.path === category)?.subcategories.find((sub) => sub.path === subcategory);
+  const subcategoryObject = categories
+    .find((cat) => cat.path === category)
+    ?.subcategories.find((sub) => sub.path === subcategory);
 
   const pageTitle = subcategory
     ? `${formatTitle(subcategory)} | SM Supermarket`
-    : 'Category | SM Supermarket';
+    : "Category | SM Supermarket";
 
   useEffect(() => {
     if (!router.isReady) return; // Wait until router has the query params
@@ -56,10 +58,9 @@ export default function CategoryPage() {
     };
 
     fetchProducts();
-  }, [category, router])
+  }, [category, router]);
 
-
-  if (router.isReady && !subcategoryObject) return <Page404 />
+  if (router.isReady && !subcategoryObject) return <Page404 />;
 
   return (
     <>
@@ -67,10 +68,10 @@ export default function CategoryPage() {
         <title>{pageTitle}</title>
       </Head>
       <Stack p={{ base: 0, lg: 4 }} gap={{ base: 2, lg: 4 }}>
-        <Box p={{ base: 4, lg: 0 }} bg={{ base: 'gray.200', lg: 'none' }}>
+        <Box p={{ base: 4, lg: 0 }} bg={{ base: "gray.200", lg: "none" }}>
           <CustomBreadcrumb
             data={{
-              root: 'home',
+              root: "home",
               first: category,
               second: subcategory,
             }}
@@ -78,15 +79,18 @@ export default function CategoryPage() {
         </Box>
 
         <Stack p={{ base: 4, lg: 0 }}>
-          <Heading size='3xl' color='#0030FF'>
+          <Heading size="3xl" color="#0030FF">
             {formatTitle(subcategory)}
           </Heading>
 
           {subcategoryObject && subcategoryObject.child.length !== 0 && (
-            <Flex direction='row' gap={4}>
+            <Flex direction="row" gap={4}>
               {subcategoryObject.child.map((c) => (
-                <Link key={c.path} href={`/${category}/${subcategory}/${c.path}`}>
-                  <Tag.Root size='xl' rounded='full'>
+                <Link
+                  key={c.path}
+                  href={`/${category}/${subcategory}/${c.path}`}
+                >
+                  <Tag.Root size="xl" rounded="full">
                     <Tag.Label>{c.label}</Tag.Label>
                   </Tag.Root>
                 </Link>
@@ -95,26 +99,35 @@ export default function CategoryPage() {
           )}
         </Stack>
 
-        <Card.Root rounded={{ base: 0, lg: 'md' }}>
+        <Card.Root rounded={{ base: 0, lg: "md" }}>
           <Card.Body p={0}>
             <Stack p={{ base: 2, lg: 4 }} gap={0}>
               <Filters router={router} />
               {loading ? (
                 <Center>
-                  <Stack gap={8} p={4} alignItems='center'>
-                    <Spinner color='blue.500' borderWidth='4px' size='xl' />
+                  <Stack gap={8} p={4} alignItems="center">
+                    <Spinner color="blue.500" borderWidth="4px" size="xl" />
                     <Heading>{pageTitle}</Heading>
                   </Stack>
                 </Center>
+              ) : allProducts.length === 0 ? (
+                <Text textAlign="center" color="gray.500" py={8}>
+                  No products to show
+                </Text>
               ) : (
-                allProducts.length === 0 ?
-                  <Text textAlign='center' color='gray.500' py={8}>No products to show</Text>
-                  :
-                  <SimpleGrid mt={4} columns={{ base: 2, md: 4 }} gap={{ base: 2, lg: 4 }}>
-                    {allProducts.map((item) => (
-                      <ProductCard pid={item.id} key={item.id} />
-                    ))}
-                  </SimpleGrid>
+                <SimpleGrid
+                  mt={4}
+                  columns={{
+                    base: 2,
+                    md: 3, // 768px+
+                    xl: 4, // 1280px+
+                  }}
+                  gap={{ base: 2, lg: 4 }}
+                >
+                  {allProducts.map((item) => (
+                    <ProductCard pid={item.id} key={item.id} />
+                  ))}
+                </SimpleGrid>
               )}
             </Stack>
           </Card.Body>

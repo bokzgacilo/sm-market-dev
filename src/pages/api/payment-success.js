@@ -21,13 +21,14 @@ export default async function handler(req, res) {
       {
         headers: {
           "Content-Type": "application/json",
-          Authorization: "Basic c2tfdGVzdF9XVG0zYzZqRmlvOTc4Z21ndkJlbTQ3b1Q6"
-        }
+          Authorization: `Basic ${process.env.PAYMONGO_KEY}`,
+        },
       }
     );
 
     const payment_status =
-      response.data.data.attributes.payments?.[0]?.attributes?.status || "unknown";
+      response.data.data.attributes.payments?.[0]?.attributes?.status ||
+      "unknown";
 
     // 3️⃣ Update order status in Supabase
     const { error: updateError } = await supabase
